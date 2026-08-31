@@ -128,7 +128,6 @@ function getDashboardData() {
       }
 
       if (!task && !status && !endDateValue) return;
-      if (oScore === 0) return;
 
       tasks.push({
         designer,

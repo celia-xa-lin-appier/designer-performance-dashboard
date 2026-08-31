@@ -588,16 +588,19 @@
   // ---------- RENDER ----------
   function renderStats(f){
     const total=f.reduce((a,t)=>a+t.oScore,0);
+    const scored=f.filter(t=>t.oScore>0);
     document.getElementById('teamScore').innerText=total.toFixed(1);
-    document.getElementById('avgScore').innerText=(f.length?total/f.length:0).toFixed(2);
+    document.getElementById('avgScore').innerText=(scored.length?total/scored.length:0).toFixed(2);
     document.getElementById('totalTasks').innerText=f.length;
     const g={};f.forEach(t=>{if(String(t.status).toLowerCase().includes('slacked')){g[t.designer]=(g[t.designer]||0)+1;}});
     document.getElementById('f2f').innerText=Object.values(g).filter(c=>c>=3).length;
   }
   function renderSummary(f,visible){
     document.getElementById('summary').innerHTML=visible.map(n=>{
-      const ts=f.filter(t=>t.designer===n);const tot=ts.reduce((a,t)=>a+t.oScore,0);
-      return `<div class="summary-card"><h3>${n}</h3><div class="score">${tot.toFixed(2)}</div><div class="task-count">${ts.length} tasks · Avg ${(ts.length?tot/ts.length:0).toFixed(2)}</div></div>`;
+      const ts=f.filter(t=>t.designer===n);
+      const scored=ts.filter(t=>t.oScore>0);
+      const tot=ts.reduce((a,t)=>a+t.oScore,0);
+      return `<div class="summary-card"><h3>${n}</h3><div class="score">${tot.toFixed(2)}</div><div class="task-count">${ts.length} tasks · Avg ${(scored.length?tot/scored.length:0).toFixed(2)}</div></div>`;
     }).join('');
   }
   function renderType(f,visible){
