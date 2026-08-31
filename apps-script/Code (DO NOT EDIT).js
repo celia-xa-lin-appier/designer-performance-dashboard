@@ -52,14 +52,23 @@ const SYNC_INTERVAL_MINUTES = 5;
 
 function importWithFormat() {
   const targetSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const errors = [];
 
   SOURCES.forEach(source => {
     try {
       const sourceSheet = SpreadsheetApp.openById(source.id).getSheetByName(source.sheet);
       const targetSheet = targetSpreadsheet.getSheetByName(source.targetSheet);
 
-      if (!sourceSheet) { Logger.log(`❌ 找不到來源工作表：${source.sheet}`); return; }
-      if (!targetSheet) { Logger.log(`❌ 找不到目標工作表：${source.targetSheet}`); return; }
+      if (!sourceSheet) {
+        Logger.log(`❌ 找不到來源工作表：${source.sheet}`);
+        errors.push(`${source.targetSheet}：找不到來源工作表 "${source.sheet}"`);
+        return;
+      }
+      if (!targetSheet) {
+        Logger.log(`❌ 找不到目標工作表：${source.targetSheet}`);
+        errors.push(`${source.targetSheet}：找不到目標工作表`);
+        return;
+      }
 
       const lastRow = sourceSheet.getLastRow();
       const lastCol = sourceSheet.getLastColumn();
@@ -88,12 +97,57 @@ function importWithFormat() {
 
     } catch (e) {
       Logger.log(`❌ ${source.sheet} 發生錯誤：${e.message}`);
+      errors.push(`${source.targetSheet} (${source.sheet})：${e.message}`);
     }
   });
+
+  if (errors.length) notifySyncFailure(errors);
 }
 
+/**
+ * Emails a summary when one or more SOURCES entries fail to sync, so a
+ * broken sync doesn't go unnoticed the way it did before (Logger.log alone
+ * is only visible to someone who thinks to check the execution log).
+ * Throttled to at most one email per hour so a persistent failure across
+ * many 5-minute runs doesn't flood the inbox.
+ */
+function notifySyncFailure(errors) {
+  const props = PropertiesService.getScriptProperties();
+  const throttleMs = 60 * 60 * 1000;
+  const lastNotified = Number(props.getProperty('lastSyncFailureNotification') || 0);
+  if (Date.now() - lastNotified < throttleMs) return;
+
+  const recipient = 'celia.xa.lin@appier.com';
+  const subject = `⚠️ Designer Calculator 同步失敗（${errors.length} 筆）`;
+  const body = [
+    '以下來源同步失敗：',
+    '',
+    ...errors,
+    '',
+    '請檢查來源試算表的權限或分頁名稱是否有變動。',
+    '（此通知每小時最多寄送一次，避免同一個問題持續觸發時灌爆信箱。）'
+  ].join('\n');
+
+  try {
+    MailApp.sendEmail(recipient, subject, body);
+    props.setProperty('lastSyncFailureNotification', String(Date.now()));
+  } catch (e) {
+    Logger.log(`❌ 無法寄送同步失敗通知：${e.message}`);
+  }
+}
+
+/**
+ * Run once manually from the Apps Script editor to install the sync
+ * trigger. Safe to re-run — only clears a prior importWithFormat trigger
+ * first, so it never touches refreshDashboardCache's trigger in
+ * Untitled.js (the previous version deleted *every* trigger in the
+ * project, which silently wiped out unrelated triggers on every re-run).
+ */
 function setupTrigger() {
-  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'importWithFormat')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+
   ScriptApp.newTrigger("importWithFormat")
     .timeBased()
     .everyMinutes(SYNC_INTERVAL_MINUTES)
