@@ -6,6 +6,18 @@ const CACHE_TTL_SECONDS = 120;
 const CACHE_KEY_PREFIX = 'designer_dashboard_v2';
 const CACHE_CHUNK_SIZE = 80000;
 
+// Per Irene: B2 "Added to AA Pipeline" stops earning points from this
+// quarter onward (inclusive). See the B2 override in getDashboardData().
+const B2_SCORE_REMOVED_FROM = { year: 2026, quarter: 3 };
+
+function isQuarterOnOrAfter(quarterText, boundary) {
+  const match = String(quarterText || '').trim().match(/^(\d{4})Q([1-4])$/);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const q = Number(match[2]);
+  return year > boundary.year || (year === boundary.year && q >= boundary.quarter);
+}
+
 /**
  * Serves the dashboard page itself. Deploy as a Web App with access set to
  * "Anyone within [your domain]" — company policy blocks true anonymous
@@ -101,8 +113,18 @@ function getDashboardData() {
       const quarter = String(row[8] || '').trim();
 
       const mScore = parseNumber(row[12]);
-      const nScore = parseNumber(row[13]);
-      const oScore = parseNumber(row[14]);
+      let nScore = parseNumber(row[13]);
+      let oScore = parseNumber(row[14]);
+      const statusCode = extractStatusCode(status);
+
+      // Per Irene: B2 "Added to AA Pipeline" no longer earns points from
+      // 2026Q3 onward. The source sheets' own score formulas may still show
+      // the old value, so this is enforced here rather than depending on
+      // every sheet being updated correctly.
+      if (statusCode === 'B2' && isQuarterOnOrAfter(quarter, B2_SCORE_REMOVED_FROM)) {
+        nScore = 0;
+        oScore = 0;
+      }
 
       if (!task && !status && !endDateValue) return;
       if (oScore === 0) return;
@@ -113,7 +135,7 @@ function getDashboardData() {
         type,
         normalizedType: normalizeType(type),
         status,
-        statusCode: extractStatusCode(status),
+        statusCode,
         endDate,
         endDateValue,
         quarter,
