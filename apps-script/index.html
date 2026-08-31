@@ -385,36 +385,65 @@
     if([...select.options].some(o=>o.value===current))select.value=current;
   }
 
-  function loadData(){
-    const loading=document.getElementById('loading');
-    const errorBox=document.getElementById('loadError');
-    errorBox.style.display='none';
+  const DASHBOARD_CACHE_KEY='dashboard_cache_v1';
 
+  function normalizeTasks(data){
+    return Array.isArray(data&&data.tasks)?data.tasks.map(t=>({
+      ...t,
+      designer:String(t.designer||'').trim(),
+      task:String(t.task||''),
+      type:String(t.type||''),
+      status:String(t.status||''),
+      statusCode:String(t.statusCode||extractStatusCode(t.status)),
+      endDateValue:String(t.endDateValue||''),
+      mScore:Number(t.mScore||0),
+      nScore:Number(t.nScore||0),
+      oScore:Number(t.oScore||0)
+    })):[];
+  }
+
+  function applyDashboardData(data,{persist}={}){
+    dashboardData=data||{designers:DESIGNERS,tasks:[]};
+    TASKS=normalizeTasks(dashboardData);
+    setupQuarterOptions();
+    document.getElementById('loading').style.display='none';
+    applyFilters();
+    if(persist){
+      try{localStorage.setItem(DASHBOARD_CACHE_KEY,JSON.stringify(dashboardData));}catch(e){/* storage unavailable — skip caching */}
+    }
+  }
+
+  function showLoadError(error){
+    document.getElementById('loading').style.display='none';
+    const errorBox=document.getElementById('loadError');
+    errorBox.style.display='block';
+    errorBox.innerHTML=`Failed to load Google Sheets data: ${esc(error&&error.message||String(error))}`;
+  }
+
+  function loadViaScriptRun(){
     google.script.run
-      .withSuccessHandler(data=>{
-        dashboardData=data||{designers:DESIGNERS,tasks:[]};
-        TASKS=Array.isArray(dashboardData.tasks)?dashboardData.tasks.map(t=>({
-          ...t,
-          designer:String(t.designer||'').trim(),
-          task:String(t.task||''),
-          type:String(t.type||''),
-          status:String(t.status||''),
-          statusCode:String(t.statusCode||extractStatusCode(t.status)),
-          endDateValue:String(t.endDateValue||''),
-          mScore:Number(t.mScore||0),
-          nScore:Number(t.nScore||0),
-          oScore:Number(t.oScore||0)
-        })):[];
-        setupQuarterOptions();
-        loading.style.display='none';
-        applyFilters();
-      })
-      .withFailureHandler(error=>{
-        loading.style.display='none';
-        errorBox.style.display='block';
-        errorBox.innerHTML=`Failed to load Google Sheets data: ${esc(error.message||String(error))}`;
-      })
+      .withSuccessHandler(data=>applyDashboardData(data,{persist:true}))
+      .withFailureHandler(showLoadError)
       .getDashboardPayload();
+  }
+
+  function loadData(){
+    document.getElementById('loadError').style.display='none';
+
+    // Show the last-known numbers instantly while a fresh fetch runs in the background.
+    try{
+      const cached=localStorage.getItem(DASHBOARD_CACHE_KEY);
+      if(cached)applyDashboardData(JSON.parse(cached));
+    }catch(e){/* no usable cache — normal first-load path handles this */}
+
+    // fetch() to this page's own URL skips the google.script.run RPC bridge
+    // and is faster when it works; falls back automatically if this page's
+    // sandbox isn't actually same-origin with its own exec URL.
+    const dataUrl=location.href.split('#')[0].split('?')[0]+'?mode=data';
+    fetch(dataUrl,{cache:'no-store'})
+      .then(res=>{if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();})
+      .then(data=>applyDashboardData(data,{persist:true}))
+      .catch(loadViaScriptRun);
   }
 
   // tooltip

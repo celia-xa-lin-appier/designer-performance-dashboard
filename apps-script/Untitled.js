@@ -10,11 +10,31 @@ const CACHE_CHUNK_SIZE = 80000;
  * Serves the dashboard page itself. Deploy as a Web App with access set to
  * "Anyone within [your domain]" — company policy blocks true anonymous
  * access, so the page must be opened by a signed-in Google account in the
- * domain (google.script.run below relies on that same session; it does not
- * go over fetch(), so it isn't affected by the anonymous-access block or by
- * third-party cookie restrictions).
+ * domain.
+ *
+ * ?mode=data serves the same JSON getDashboardPayload() returns, but via a
+ * plain HTTP response instead of the google.script.run bridge. The page
+ * tries fetch(selfUrl + '?mode=data') first (faster when it works — no
+ * RPC-bridge overhead) and falls back to google.script.run automatically
+ * if that fetch fails for any reason (e.g. the sandboxed iframe this page
+ * runs in isn't actually same-origin with this URL).
  */
-function doGet() {
+function doGet(e) {
+  if (e && e.parameter && e.parameter.mode === 'data') {
+    let payload;
+    try {
+      payload = getDashboardPayload();
+    } catch (error) {
+      payload = {
+        designers: DESIGNERS,
+        tasks: [],
+        error: error && error.message ? error.message : String(error)
+      };
+    }
+    return ContentService.createTextOutput(JSON.stringify(payload))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Performance Framework')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
