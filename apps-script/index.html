@@ -395,6 +395,7 @@
       type:String(t.type||''),
       status:String(t.status||''),
       statusCode:String(t.statusCode||extractStatusCode(t.status)),
+      startDateValue:String(t.startDateValue||''),
       endDateValue:String(t.endDateValue||''),
       mScore:Number(t.mScore||0),
       nScore:Number(t.nScore||0),
@@ -802,7 +803,12 @@
     });
 
     // ---------- OVER TIME: cumulative score ----------
-    const validDates=f.map(t=>t.endDateValue).filter(Boolean).sort();
+    // Falls back to start date when end date is blank, so a scored task
+    // with no end date filled in yet still counts toward the total instead
+    // of silently vanishing from this chart. Once an end date is filled
+    // in, it takes over automatically since it's checked first.
+    const timelineDate=t=>t.endDateValue||t.startDateValue;
+    const validDates=f.map(timelineDate).filter(Boolean).sort();
     let weeks=[];
 
     if(validDates.length){
@@ -838,8 +844,8 @@
     visible.forEach(name=>{
       const weeklyScore=Array(weeks.length).fill(0);
 
-      f.filter(t=>t.designer===name&&t.endDateValue).forEach(t=>{
-        weeklyScore[weekIndex(t.endDateValue)]+=Number(t.oScore||0);
+      f.filter(t=>t.designer===name&&timelineDate(t)).forEach(t=>{
+        weeklyScore[weekIndex(timelineDate(t))]+=Number(t.oScore||0);
       });
 
       let running=0;
