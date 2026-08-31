@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Epilogue:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f2ea; --card:#fffef9; --card2:#faf6ee; --inset:#f3eee3;
+    --border:#e7dfce; --border2:#d9cfb8;
+    --ink:#2b2724; --ink2:#4a443b; --muted:#6f685c; --faint:#a89e8c;
+    --blue:#2f6fb0; --green:#2f9e5f; --gold:#dd9a15;
+    --purple:#7d54b8; --terra:#dd6a3a; --red:#cf4436; --teal:#1f9e94;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;padding:32px 20px;}
+  .container{max-width:1120px;margin:0 auto;}
+  .eyebrow{color:var(--terra);font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px;}
+  h1{font-family:'Epilogue',sans-serif;font-size:56px;line-height:.95;font-weight:900;letter-spacing:-.04em;margin-bottom:14px;color:var(--ink);}
+  .gradient{background:linear-gradient(90deg,var(--terra),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .subtitle{color:var(--muted);font-size:16px;line-height:1.6;margin-bottom:24px;}
+  .note{background:#fff6e2;border:1px dashed var(--gold);border-radius:12px;padding:12px 16px;color:#8a6410;font-size:13px;margin-bottom:24px;line-height:1.5;}
+
+  .nav{position:sticky;top:0;z-index:20;display:flex;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:6px;margin-bottom:24px;box-shadow:0 2px 10px rgba(0,0,0,.03);}
+  .navtab{flex:1;border:none;background:transparent;color:var(--muted);font-family:'Epilogue',sans-serif;font-weight:800;font-size:15px;padding:12px;border-radius:9px;cursor:pointer;min-height:auto;}
+  .navtab.active{background:var(--ink);color:var(--bg);}
+
+  .filters{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;align-items:center;}
+  select,input,button{font-family:'DM Sans',sans-serif;border-radius:999px;border:1px solid var(--border2);background:var(--inset);color:var(--ink);padding:10px 16px;font-size:14px;min-height:42px;}
+  button{cursor:pointer;background:var(--terra);border-color:var(--terra);color:#fff;font-weight:800;}
+  button.secondary{background:var(--card2);border-color:var(--border2);color:var(--ink);}
+  .search{flex:1;min-width:220px;}
+  .search::placeholder{color:var(--faint);}
+  .date-picker{position:relative;min-width:170px;min-height:42px;border-radius:999px;border:1px solid var(--border2);background:var(--inset);color:var(--ink);padding:10px 44px 10px 18px;display:flex;align-items:center;cursor:pointer;}
+  .date-picker span{font-size:14px;font-weight:500;color:var(--ink2);pointer-events:none;white-space:nowrap;}
+  .date-picker input[type="date"]{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:28px;height:28px;min-height:28px;opacity:.01;cursor:pointer;border:none;padding:0;margin:0;background:transparent;}
+  .date-picker::after{content:"📅";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7;pointer-events:none;}
+  .hint{color:var(--faint);font-size:12px;width:100%;margin-top:2px;}
+
+  .team-stats,.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:24px;}
+  .stat-card,.summary-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;}
+  .stat-value{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:46px;line-height:1;}
+  .stat-label{color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:10px;}
+  .summary-card h3{font-size:16px;font-weight:800;margin-bottom:8px;color:var(--ink);}
+  .score{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:34px;color:var(--green);}
+  .task-count{color:var(--muted);font-size:13px;margin-top:4px;}
+
+  .accordion{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:visible;}
+  .accordion-header{padding:18px 22px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:'Epilogue',sans-serif;font-size:18px;font-weight:900;color:var(--ink);}
+  .accordion-body{display:none;border-top:1px solid var(--border);padding:22px;color:var(--ink2);line-height:1.7;}
+  .accordion-body.open{display:block;}
+  .section-subtitle{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.5;}
+
+  .reference-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .ref-title{font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;}
+  .ref-row{background:var(--inset);border-radius:8px;padding:9px 10px;margin-bottom:7px;display:flex;gap:10px;justify-content:space-between;align-items:center;}
+  .ref-left{display:flex;gap:9px;align-items:flex-start;min-width:0;}
+  .code{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:2px 7px;border-radius:5px;border:1px solid currentColor;background:#fff;flex-shrink:0;}
+  .ref-main{font-size:14px;font-weight:800;}
+  .ref-sub{font-size:12px;color:var(--faint);margin-top:2px;}
+  .ref-value{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;flex-shrink:0;}
+  .c-blue{color:var(--blue);} .c-green{color:var(--green);} .c-gold{color:var(--gold);}
+  .c-purple{color:var(--purple);} .c-terra{color:var(--terra);} .c-red{color:var(--red);} .c-teal{color:var(--teal);} .c-muted{color:var(--muted);}
+  .rules-body h3{color:var(--ink);margin:18px 0 8px;font-size:15px;}
+  .rules-body ul{margin:8px 0 10px 22px;}
+  .rules-body li{margin-bottom:6px;}
+  .highlight{color:var(--green);font-weight:800;}
+
+  .chart-grid{display:grid;grid-template-columns:1fr;gap:18px;}
+
+  /* Status Distribution: keep Kathy / Lin / Min side by side */
+  #statusCharts{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+    align-items:start;
+  }
+  #statusCharts .chart-block{
+    min-width:0;
+    padding:15px;
+  }
+  #statusCharts .chart-name{
+    align-items:flex-start;
+    gap:8px;
+  }
+  #statusCharts .chart-head-right{
+    gap:6px;
+  }
+  #statusCharts .srow{
+    grid-template-columns:minmax(82px,112px) minmax(50px,1fr) 26px;
+    gap:7px;
+    padding:5px 6px;
+  }
+  #statusCharts .slabel{
+    gap:4px;
+    min-width:0;
+  }
+  #statusCharts .slabel .full{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  #statusCharts .approved-badge{
+    padding:4px 7px;
+    font-size:10px;
+  }
+  #statusCharts .approved-badge b{
+    font-size:12px;
+  }
+  #statusCharts .chart-total{
+    font-size:10px;
+  }
+  .chart-block{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+  .chart-name{font-weight:900;margin-bottom:14px;display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--ink);}
+  .chart-head-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end;}
+  .approved-badge{display:inline-flex;align-items:center;gap:6px;background:#e9f5ee;border:1px solid #b9dcc7;color:#247b49;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;white-space:nowrap;}
+  .approved-badge b{font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .chart-total{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);font-weight:800;}
+  .stack{display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--border2);}
+  .seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;color:#fff;cursor:default;transition:filter .15s;white-space:nowrap;}
+  .seg:hover{filter:brightness(1.09);}
+  .empty-mini{color:var(--faint);font-size:13px;padding:6px 0;}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+  .legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);font-weight:600;}
+  .swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+
+  .srow{display:grid;grid-template-columns:minmax(150px,190px) 1fr 40px;gap:10px;align-items:center;margin-bottom:8px;padding:5px 8px;border-radius:8px;cursor:default;transition:background .13s;}
+  .srow:hover{background:#fff;}
+  .srow.win{background:#fdf6e6;}
+  .srow.win:hover{background:#fbefd2;}
+  .slabel{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--ink2);display:flex;align-items:center;gap:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .slabel .full{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--muted);font-size:11px;}
+  .win-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+  .sbar{height:11px;background:#ece4d2;border-radius:999px;overflow:hidden;}
+  .sfill{height:100%;background:var(--blue);border-radius:999px;}
+  .sfill.win{background:var(--green);}
+  .scount{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);text-align:right;font-weight:800;}
+
+  .overview-block{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+  .approved-line{background:#e9f5ee;border:1px solid #b9dcc7;color:#247b49;border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:13px;font-weight:700;line-height:1.55;}
+  .approved-line b{font-family:'JetBrains Mono',monospace;font-size:14px;}
+  .potential-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+  .potential-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:0;}
+  .potential-name{font-size:15px;font-weight:900;margin-bottom:7px;}
+  .potential-main{font-size:12px;line-height:1.65;color:var(--ink2);}
+  .potential-main b{font-family:'JetBrains Mono',monospace;color:var(--green);}
+  .potential-main .warning{color:var(--terra);font-weight:800;}
+  .potential-sub{font-size:11px;line-height:1.5;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .potential-note{font-size:11px;color:var(--faint);line-height:1.55;margin:-2px 0 16px;}
+  .final-score-label{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;}
+  .ov-toggle{display:flex;gap:6px;background:var(--inset);border:1px solid var(--border);border-radius:999px;padding:4px;width:fit-content;margin-bottom:16px;}
+  .ovtab{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:7px 16px;border-radius:999px;cursor:pointer;min-height:auto;}
+  .ovtab.active{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .ov-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px;}
+  svg text{font-family:'DM Sans',sans-serif;}
+  .bar-r{transition:filter .12s;}.bar-r:hover{filter:brightness(1.12);}
+  .tl-dot{cursor:default;}
+  .ov-caption{color:var(--faint);font-size:12px;margin-top:10px;line-height:1.5;}
+
+  .designer-section{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden;}
+  .designer-header{padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--terra),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;flex-shrink:0;}
+  .designer-info{flex:1;min-width:0;}
+  .designer-name{font-size:17px;font-weight:900;color:var(--ink);}
+  .designer-meta{font-size:13px;margin-top:4px;color:var(--muted);word-break:break-word;}
+  .designer-total{text-align:right;flex-shrink:0;}
+  .designer-total .num{font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--green);font-weight:800;}
+  .designer-total .text{color:var(--muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
+  .bar{height:3px;background:var(--border);}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
+  .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
+  .task-row{background:var(--inset);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;}
+  .task-top{display:flex;gap:10px;align-items:flex-start;}
+  .task-title{flex:1;font-size:14px;line-height:1.45;font-weight:700;color:var(--ink);}
+  .status-badge{font-size:12px;color:var(--green);background:#e7f2ec;border:1px solid #b6d8c4;border-radius:6px;padding:3px 8px;font-weight:700;max-width:290px;}
+  .task-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;color:var(--ink2);font-size:12px;}
+  .pill{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-weight:600;}
+  .pill b{color:var(--terra);font-family:'JetBrains Mono',monospace;}
+  .formula{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);background:var(--card2);border:1px dashed var(--border2);border-radius:7px;padding:8px 10px;line-height:1.6;}
+  .empty{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;color:var(--muted);}
+
+  #tip{position:fixed;pointer-events:none;z-index:99;background:var(--ink);color:#f6f2ea;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:320px;opacity:0;transition:opacity .12s;}
+  #tip .tip-head{font-weight:800;display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+  #tip .tip-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+  #tip .tip-sub{color:#c9bfa8;font-size:11px;margin-bottom:5px;}
+  #tip .tip-task{color:#ece4d2;padding-top:4px;margin-top:4px;border-top:1px solid #4a443b;}
+  #tip .tip-task:first-of-type{border-top:none;margin-top:0;padding-top:0;}
+  .win-tag{display:inline-block;background:#fff6e2;border:1px solid var(--gold);color:#8a6410;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:8px;}
+  .lead-badge{margin-left:0;margin-right:6px;}
+
+  .tab-panel{display:none;}.tab-panel.active{display:block;}
+  @media(max-width:980px){
+    h1{font-size:40px;}
+    .reference-grid{grid-template-columns:1fr;}
+    .potential-grid{grid-template-columns:1fr;}
+    #statusBody{overflow-x:auto;}
+    #statusCharts{
+      grid-template-columns:repeat(3,minmax(300px,1fr));
+      min-width:930px;
+    }
+  }
+
+  @media(max-width:620px){
+    #statusCharts{
+      grid-template-columns:repeat(3,minmax(280px,1fr));
+      min-width:870px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="eyebrow">DESIGN TEAM • QUARTERLY OKR</div>
+  <h1>Performance <span class="gradient">Framework</span></h1>
+  <div class="subtitle">Lifecycle-based scoring — each creative card closes with a locked score.</div>
+
+  <div class="note">📌 LIVE DASHBOARD — data is loaded from Google Sheets through the Apps Script API and refreshes automatically every 2 minutes.</div>
+
+  <div class="nav">
+    <button class="navtab active" onclick="showTab('performance',this)">📊 Performance</button>
+    <button class="navtab" onclick="showTab('reference',this)">📋 Reference &amp; Rules</button>
+  </div>
+
+  <div id="tab-performance" class="tab-panel active">
+    <div class="filters">
+      <input type="text" id="search" class="search" placeholder="🔍 Search task name / status / type…" oninput="applyFilters()">
+      <select id="designerFilter" onchange="applyFilters()"><option value="All">All Designers</option><option>Kathy</option><option>Lin</option><option>Min</option></select>
+      <select id="quarterFilter" onchange="applyFilters()"><option value="All">All Quarters</option></select>
+      <div class="date-picker" onclick="openDatePicker('startDate')"><span id="startDateLabel">Start Date</span><input type="date" id="startDate" onchange="applyFilters()"></div>
+      <div class="date-picker" onclick="openDatePicker('endDate')"><span id="endDateLabel">End Date</span><input type="date" id="endDate" onchange="applyFilters()"></div>
+      <button onclick="applyFilters()">Apply Filter</button>
+      <button class="secondary" onclick="resetFilters()">Reset</button>
+      <div class="hint">Date filter matches Column F End Date. Search matches task name, status code/full status, or type, and every score and chart recomputes automatically.</div>
+    </div>
+
+    <div class="team-stats">
+      <div class="stat-card"><div class="stat-value" id="teamScore" style="color:var(--blue)">0.0</div><div class="stat-label">Team Score</div></div>
+      <div class="stat-card"><div class="stat-value" id="avgScore" style="color:var(--green)">0.0</div><div class="stat-label">Avg Score</div></div>
+      <div class="stat-card"><div class="stat-value" id="totalTasks" style="color:var(--muted)">0</div><div class="stat-label">Total Tasks</div></div>
+      <div class="stat-card"><div class="stat-value" id="f2f" style="color:var(--gold)">0</div><div class="stat-label">F2F Flagged</div></div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('typeBody',this)"><span>📈 Type Distribution</span><span>▲</span></div>
+      <div id="typeBody" class="accordion-body open">
+        <div class="section-subtitle">One 100% stacked bar per designer using the seven confirmed Column B categories. Blank Column B cells are excluded from totals and percentages. Hover a segment for details.</div>
+        <div id="typeCharts" class="chart-grid"></div>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('statusBody',this)"><span>📊 Status Distribution</span><span>▲</span></div>
+      <div id="statusBody" class="accordion-body open">
+        <div class="section-subtitle">One chart per designer, all codes. “A Approve Rate” = A4–A8 tasks ÷ A2–A8 tasks. Hover a row to see its task names and score total.</div>
+        <div id="statusCharts" class="chart-grid"></div>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('overviewBody',this)"><span>🏁 Team Overview — 3-Designer Comparison</span><span>▲</span></div>
+      <div id="overviewBody" class="accordion-body open">
+        <div class="overview-block">
+          <div id="potentialOverview" class="potential-grid"></div>
+          <div class="potential-note">Potential assumes each A2/A3 task can move to the minimum Approved status A4. Estimated gain uses the task's actual multiplier and status score.</div>
+          <div class="ov-toggle">
+            <button class="ovtab active" onclick="ovView('status',this)">By Status</button>
+            <button class="ovtab" onclick="ovView('time',this)">Over Time</button>
+          </div>
+          <div id="ovStatus"><div class="ov-legend" id="ovLegendS"></div><div id="overviewChart"></div>
+            <div class="ov-caption">Y-axis = cumulative score. Each cluster shows the score accumulated through that status code. A4–A8 and C1–C2 zones remain shaded.</div></div>
+          <div id="ovTime" style="display:none"><div class="ov-legend" id="ovLegendT"></div><div id="timelineChart"></div>
+            <div class="ov-caption">Y-axis = cumulative score by End Date. Final points are labeled with each designer's current score.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading" class="empty">Loading Google Sheets data…</div>
+    <div id="loadError" class="empty" style="display:none;color:var(--red)"></div>
+    <div id="designerList"></div>
+  </div>
+
+  <div id="tab-reference" class="tab-panel">
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('refBody',this)"><span>📋 Scoring Framework Reference</span><span>▲</span></div>
+      <div id="refBody" class="accordion-body open">
+        <div class="reference-grid">
+          <div>
+            <div class="ref-title c-blue">(A) UA — Outcome Score</div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-blue">A1</span><div><div class="ref-main c-blue">In Progress</div><div class="ref-sub">Open card</div></div></div><div class="ref-value c-blue">—</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-red">A2</span><div><div class="ref-main c-red">Produced, Delivered & Slacked AM/BD</div><div class="ref-sub">No further follow-up after delivery</div></div></div><div class="ref-value c-red">0.4</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-muted">A3</span><div><div class="ref-main c-muted">Rejected after follow-up</div><div class="ref-sub">Feedback documented</div></div></div><div class="ref-value c-muted">0.6</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-green">A4</span><div><div class="ref-main c-green">Approved (share &lt; 10%)</div><div class="ref-sub">New template discovery</div></div></div><div class="ref-value c-green">1</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-green">A5</span><div><div class="ref-main c-green">Approved + share &gt; 10%</div><div class="ref-sub">Imp/rev share vs client creative</div></div></div><div class="ref-value c-green">1.1</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-green">A6</span><div><div class="ref-main c-green">Approved + share &gt; 25%</div><div class="ref-sub">Imp/rev share vs client creative</div></div></div><div class="ref-value c-green">1.2</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-green">A7</span><div><div class="ref-main c-green">Approved + share &gt; 50%</div><div class="ref-sub">Imp/rev share vs client creative</div></div></div><div class="ref-value c-green">1.5</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-gold">A8</span><div><div class="ref-main c-gold">Approved + share &gt; 70%</div><div class="ref-sub">Imp/rev share vs client creative</div></div></div><div class="ref-value c-gold">1.7</div></div>
+          </div>
+          <div>
+            <div class="ref-title c-purple">Difficulty Multiplier</div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-purple">D1</span><div class="ref-main c-muted">Static / Banner</div></div><div class="ref-value c-purple">×1</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-purple">D2</span><div class="ref-main c-muted">Video</div></div><div class="ref-value c-purple">×1.1</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-purple">D3</span><div class="ref-main c-muted">Playable</div></div><div class="ref-value c-purple">×1.2</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-purple">D4</span><div class="ref-main c-muted">Interactive / Multi-video</div></div><div class="ref-value c-purple">×1.3</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-purple">D5</span><div class="ref-main c-muted">AI Stories</div></div><div class="ref-value c-purple">×1.5</div></div>
+            <div class="ref-title c-teal" style="margin-top:22px;">Feature / Template</div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-teal">B1</span><div class="ref-main c-muted">Discovery Delivered</div></div><div class="ref-value c-teal">0.5</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-teal">B2</span><div class="ref-main c-muted">Added to AA Pipeline</div></div><div class="ref-value c-teal">3</div></div>
+            <div class="ref-title c-terra" style="margin-top:22px;">Branding</div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-terra">C1</span><div class="ref-main c-muted">Pitch Creatives Delivered</div></div><div class="ref-value c-terra">0.4</div></div>
+            <div class="ref-row"><div class="ref-left"><span class="code c-terra">C2</span><div class="ref-main c-muted">Client Committed to Online Campaign</div></div><div class="ref-value c-terra">0.6</div></div>
+          </div>
+          <div>
+            <div class="ref-title c-gold">Lifecycle Flow</div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">1</span><div class="ref-main c-muted">Manager assigns → card opens</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">2</span><div class="ref-main c-muted">Daily standup tracks progress</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">3</span><div class="ref-main c-muted">Designer sends Slack follow-ups</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">4</span><div class="ref-main c-muted">Terminal state → score locks</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">5</span><div class="ref-main c-muted">Quarter end → OKR portfolio review</div></div></div>
+            <div class="ref-title c-gold" style="margin-top:22px;">Performance Tiers</div>
+            <div class="ref-row" style="border:1px solid var(--red);"><div class="ref-main c-red">Below Standard</div><div class="ref-value c-red">0–9 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--blue);"><div class="ref-main c-blue">Meeting Standard</div><div class="ref-value c-blue">9–18 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--green);"><div class="ref-main c-green">Exceeding</div><div class="ref-value c-green">18–28 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--gold);"><div class="ref-main c-gold">Outstanding</div><div class="ref-value c-gold">≥28 pts</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('rulesBody',this)"><span>🧩 Creative Count Rules</span><span>▲</span></div>
+      <div id="rulesBody" class="accordion-body rules-body open">
+        <h3>One creative template = One count</h3>
+        <p>A single creative concept/template is counted as <span class="highlight">1 creative</span>, regardless of revisions.</p>
+        <h3>Revisions do not create additional counts</h3>
+        <ul><li>End card changes</li><li>CTA updates</li><li>Language localization or translation</li><li>Text modifications</li><li>Asset replacements</li><li>Status-based revisions or adjustments</li></ul>
+        <h3>Horizontal and Vertical versions count as one</h3>
+        <p>Format adjustments alone do not qualify as a new creative count.</p>
+        <h3>New count criteria</h3>
+        <p>A new count should only be created when there is a substantially different creative concept, template, structure, or visual direction.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+  const TYPE_ORDER=['Branding','Video','AI stories','Playable','Interactive/Multi','Static/Banner','other'];
+  const TYPE_COLORS={
+    'Branding':'#1f9e94',
+    'Video':'#dd6a3a',
+    'AI stories':'#2f6fb0',
+    'Playable':'#dd9a15',
+    'Interactive/Multi':'#7d54b8',
+    'Static/Banner':'#2f9e5f',
+    'other':'#b0a692'
+  };
+  const STATUS_ORDER=['A1','A2','A3','A4','A5','A6','A7','A8','B1','B2','C1','C2','F'];
+  const OV_CODES=['A2','A3','A4','A5','A6','A7','A8','B1','B2','C1','C2'];
+  const WINS=['A4','A5','A6','A7','A8'];
+  const STATUS_FULL={A1:'In Progress',A2:'Produced, Delivered & Slacked AM/BD',A3:'Rejected after follow-up',A4:'Approved (share < 10%)',A5:'Approved + share > 10%',A6:'Approved + share > 25%',A7:'Approved + share > 50%',A8:'Approved + share > 70%',B1:'Discovery Delivered',B2:'Added to AA Pipeline',C1:'Pitch Creatives Delivered',C2:'Client Committed to Online Campaign',F:'Fail'};
+  const DESIGNERS=['Kathy','Lin','Min'];
+  const DCOLORS={Kathy:'#2f6fb0',Lin:'#2f9e5f',Min:'#dd9a15'};
+
+  let TASKS=[];
+  let dashboardData={designers:DESIGNERS,tasks:[]};
+
+  function formatQuarter(value){
+    const q=String(value||'').trim();
+    const m=q.match(/^(\d{4})Q([1-4])$/i);
+    return m?`Q${m[2]} ${m[1]}`:q;
+  }
+
+  function setupQuarterOptions(){
+    const select=document.getElementById('quarterFilter');
+    const current=select.value||'All';
+    const quarters=[...new Set(TASKS.map(t=>String(t.quarter||'').trim()).filter(Boolean))].sort().reverse();
+    select.innerHTML='<option value="All">All Quarters</option>';
+    quarters.forEach(q=>{
+      const option=document.createElement('option');
+      option.value=q;
+      option.textContent=formatQuarter(q);
+      select.appendChild(option);
+    });
+    if([...select.options].some(o=>o.value===current))select.value=current;
+  }
+
+  function loadData(){
+    const loading=document.getElementById('loading');
+    const errorBox=document.getElementById('loadError');
+    errorBox.style.display='none';
+
+    google.script.run
+      .withSuccessHandler(data=>{
+        dashboardData=data||{designers:DESIGNERS,tasks:[]};
+        TASKS=Array.isArray(dashboardData.tasks)?dashboardData.tasks.map(t=>({
+          ...t,
+          designer:String(t.designer||'').trim(),
+          task:String(t.task||''),
+          type:String(t.type||''),
+          status:String(t.status||''),
+          statusCode:String(t.statusCode||extractStatusCode(t.status)),
+          endDateValue:String(t.endDateValue||''),
+          mScore:Number(t.mScore||0),
+          nScore:Number(t.nScore||0),
+          oScore:Number(t.oScore||0)
+        })):[];
+        setupQuarterOptions();
+        loading.style.display='none';
+        applyFilters();
+      })
+      .withFailureHandler(error=>{
+        loading.style.display='none';
+        errorBox.style.display='block';
+        errorBox.innerHTML=`Failed to load Google Sheets data: ${esc(error.message||String(error))}`;
+      })
+      .getDashboardPayload();
+  }
+
+  // tooltip
+  function extractStatusCode(status){
+    if(!status)return 'No Status';
+    const text=String(status).trim();
+    const match=text.match(/^(A[1-8]|B[1-2]|C[1-2]|F)/i);
+    if(match)return match[1].toUpperCase();
+    if(text.toLowerCase()==='fail')return 'F';
+    return text;
+  }
+
+  function normalizeType(type){
+    const text=String(type||'').trim();
+    if(!text)return '';
+
+    const key=text.toLowerCase().replace(/\s+/g,' ');
+    const mapping={
+      'branding':'Branding',
+      'video':'Video',
+      'ai stories':'AI stories',
+      'ai story':'AI stories',
+      'playable':'Playable',
+      'interactive/multi':'Interactive/Multi',
+      'interactive / multi':'Interactive/Multi',
+      'static/banner':'Static/Banner',
+      'static / banner':'Static/Banner',
+      'other':'other'
+    };
+
+    return mapping[key]||'';
+  }
+
+  function getApprovedTotal(tasks,designer){
+    return tasks.filter(t=>t.designer===designer&&WINS.includes(t.statusCode)).length;
+  }
+
+  function getApproveRate(tasks,designer){
+    const designerTasks=tasks.filter(t=>t.designer===designer);
+    const denominatorCodes=['A2','A3','A4','A5','A6','A7','A8'];
+    const approved=designerTasks.filter(t=>WINS.includes(t.statusCode)).length;
+    const denominator=designerTasks.filter(t=>denominatorCodes.includes(t.statusCode)).length;
+    return {
+      approved,
+      denominator,
+      percent:denominator?(approved/denominator)*100:0
+    };
+  }
+
+  const PERFORMANCE_TIERS=[
+    {name:'Below Standard',min:0,next:9},
+    {name:'Meeting Standard',min:9,next:18},
+    {name:'Exceeding',min:18,next:28},
+    {name:'Outstanding',min:28,next:Infinity}
+  ];
+
+  function getTierInfo(score){
+    if(score>=28)return {name:'Outstanding',nextName:'Highest tier',nextScore:Infinity,gap:0};
+    if(score>=18)return {name:'Exceeding',nextName:'Outstanding',nextScore:28,gap:28-score};
+    if(score>=9)return {name:'Meeting Standard',nextName:'Exceeding',nextScore:18,gap:18-score};
+    return {name:'Below Standard',nextName:'Meeting Standard',nextScore:9,gap:9-score};
+  }
+
+  function getPotentialInfo(tasks,designer){
+    const designerTasks=tasks.filter(t=>t.designer===designer);
+    const score=designerTasks.reduce((sum,t)=>sum+Number(t.oScore||0),0);
+    const tier=getTierInfo(score);
+
+    const candidates=designerTasks
+      .filter(t=>['A2','A3'].includes(t.statusCode))
+      .map(t=>{
+        const m=Number(t.mScore||0);
+        const currentN=Number(t.nScore||0);
+        const currentO=Number(t.oScore||0);
+        const projectedA4=m*1;
+        const gain=Math.max(0,projectedA4-currentO);
+        return {...t,gain};
+      })
+      .sort((a,b)=>b.gain-a.gain);
+
+    const totalPotential=candidates.reduce((sum,t)=>sum+t.gain,0);
+    let running=0;
+    let neededTasks=0;
+
+    if(tier.gap>0){
+      for(const task of candidates){
+        if(running>=tier.gap)break;
+        running+=task.gain;
+        neededTasks++;
+      }
+    }
+
+    return {
+      score,
+      tier,
+      candidates,
+      totalPotential,
+      neededTasks:tier.gap===0?0:(running>=tier.gap?neededTasks:null)
+    };
+  }
+
+  const tip=document.getElementById('tip');
+  function showTip(h,e){tip.innerHTML=h;tip.style.opacity=1;moveTip(e);}
+  function moveTip(e){const p=14;let x=e.clientX+p,y=e.clientY+p;const r=tip.getBoundingClientRect();if(x+r.width>innerWidth)x=e.clientX-r.width-p;if(y+r.height>innerHeight)y=e.clientY-r.height-p;tip.style.left=x+'px';tip.style.top=y+'px';}
+  function hideTip(){tip.style.opacity=0;}
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function tog(id,h){const b=document.getElementById(id);b.classList.toggle('open');h.querySelector('span:last-child').innerText=b.classList.contains('open')?'▲':'▼';}
+  function showTab(name,btn){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
+  function ovView(v,btn){document.getElementById('ovStatus').style.display=v==='status'?'block':'none';document.getElementById('ovTime').style.display=v==='time'?'block':'none';document.querySelectorAll('.ovtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  function openDatePicker(id){const i=document.getElementById(id);if(i.showPicker)i.showPicker();else{i.focus();i.click();}}
+  function niceScale(max){if(max<=0)return{max:4,step:1};const raw=max/6;const step=[1,2,5,10,20,25,50,100].find(s=>s>=raw)||Math.ceil(raw);return{max:Math.ceil(max/step)*step,step};}
+
+  // ---------- FILTER ----------
+  function resetFilters(){document.getElementById('search').value='';document.getElementById('designerFilter').value='All';document.getElementById('quarterFilter').value='All';document.getElementById('startDate').value='';document.getElementById('endDate').value='';applyFilters();}
+  function applyFilters(){
+    const kw=document.getElementById('search').value.trim().toLowerCase();
+    const dz=document.getElementById('designerFilter').value;
+    const q=document.getElementById('quarterFilter').value;
+    const sd=document.getElementById('startDate').value;
+    const ed=document.getElementById('endDate').value;
+    const base=TASKS.filter(t=>{
+      if(q!=='All'&&t.quarter!==q)return false;
+      if((sd||ed)&&!t.endDateValue)return false;
+      if(sd&&t.endDateValue<sd)return false;
+      if(ed&&t.endDateValue>ed)return false;
+      if(kw){const hay=(t.task+' '+t.statusCode+' '+t.status+' '+t.type).toLowerCase();if(!hay.includes(kw))return false;}
+      return true;
+    });
+    const filtered=base.filter(t=>dz==='All'||t.designer===dz);
+    const visible=dz==='All'?DESIGNERS:[dz];
+    renderStats(filtered);
+    renderSummary(filtered,visible);
+    renderType(filtered,visible);
+    renderStatus(filtered,visible);
+    renderOverview(filtered,visible);
+    renderDesignerList(filtered,visible);
+    syncLabels();
+  }
+  function syncLabels(){document.getElementById('startDateLabel').innerText=document.getElementById('startDate').value||'Start Date';document.getElementById('endDateLabel').innerText=document.getElementById('endDate').value||'End Date';}
+
+  // ---------- RENDER ----------
+  function renderStats(f){
+    const total=f.reduce((a,t)=>a+t.oScore,0);
+    document.getElementById('teamScore').innerText=total.toFixed(1);
+    document.getElementById('avgScore').innerText=(f.length?total/f.length:0).toFixed(2);
+    document.getElementById('totalTasks').innerText=f.length;
+    const g={};f.forEach(t=>{if(String(t.status).toLowerCase().includes('slacked')){g[t.designer]=(g[t.designer]||0)+1;}});
+    document.getElementById('f2f').innerText=Object.values(g).filter(c=>c>=3).length;
+  }
+  function renderSummary(f,visible){
+    document.getElementById('summary').innerHTML=visible.map(n=>{
+      const ts=f.filter(t=>t.designer===n);const tot=ts.reduce((a,t)=>a+t.oScore,0);
+      return `<div class="summary-card"><h3>${n}</h3><div class="score">${tot.toFixed(2)}</div><div class="task-count">${ts.length} tasks · Avg ${(ts.length?tot/ts.length:0).toFixed(2)}</div></div>`;
+    }).join('');
+  }
+  function renderType(f,visible){
+    document.getElementById('typeCharts').innerHTML=visible.map(n=>{
+      const typedTasks=f.filter(t=>t.designer===n).map(t=>normalizeType(t.type)).filter(Boolean);
+      const counts={};
+      typedTasks.forEach(type=>{counts[type]=(counts[type]||0)+1;});
+      const total=typedTasks.length;
+
+      if(!total)return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">0 typed tasks</span></div><div class="empty-mini">No valid Column B type data.</div></div>`;
+
+      const segs=TYPE_ORDER.map(type=>{
+        const count=counts[type]||0;
+        if(!count)return '';
+        const pct=count/total*100;
+        return `<div class="seg" style="width:${pct}%;background:${TYPE_COLORS[type]}" data-type="${esc(type)}" data-color="${TYPE_COLORS[type]}" data-count="${count}" data-pct="${pct.toFixed(1)}">${pct>=8?Math.round(pct)+'%':''}</div>`;
+      }).join('');
+
+      const legend=TYPE_ORDER.map(type=>`<div class="legend-item"><span class="swatch" style="background:${TYPE_COLORS[type]}"></span>${type} (${counts[type]||0})</div>`).join('');
+      return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">${total} typed tasks</span></div><div class="stack">${segs}</div><div class="legend">${legend}</div></div>`;
+    }).join('');
+
+    document.querySelectorAll('#typeCharts .seg').forEach(s=>{
+      s.addEventListener('mousemove',e=>showTip(`<div class="tip-head"><span class="tip-sw" style="background:${s.dataset.color}"></span>${s.dataset.type}</div><div>${s.dataset.count} creatives · ${s.dataset.pct}%</div>`,e));
+      s.addEventListener('mouseleave',hideTip);
+    });
+  }
+  function renderStatus(f,visible){
+    document.getElementById('statusCharts').innerHTML=visible.map(n=>{
+      const ts=f.filter(t=>t.designer===n);
+      const byCode={};
+      ts.forEach(t=>{
+        if(!byCode[t.statusCode])byCode[t.statusCode]=[];
+        byCode[t.statusCode].push(t);
+      });
+
+      const codes=STATUS_ORDER.filter(c=>byCode[c]);
+      if(!codes.length){
+        return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">0 total</span></div><div class="empty-mini">No tasks.</div></div>`;
+      }
+
+      const max=Math.max(...codes.map(c=>byCode[c].length),1);
+      const total=ts.length;
+      const rate=getApproveRate(f,n);
+
+      const rows=codes.map(code=>{
+        const approved=WINS.includes(code);
+        const w=Math.round(byCode[code].length/max*100);
+        const encoded=encodeURIComponent(JSON.stringify(byCode[code].map(t=>({
+          task:t.task,
+          score:Number(t.oScore||0)
+        }))));
+
+        return `<div class="srow ${approved?'win':''}" data-code="${code}" data-name="${n}" data-items="${encoded}">
+          <div class="slabel">${code} <span class="full">${STATUS_FULL[code]||esc(code)}</span></div>
+          <div class="sbar"><div class="sfill ${approved?'win':''}" style="width:${w}%"></div></div>
+          <div class="scount">${byCode[code].length}</div>
+        </div>`;
+      }).join('');
+
+      return `<div class="chart-block">
+        <div class="chart-name">
+          <span>${n}</span>
+          <div class="chart-head-right">
+            <span class="approved-badge" title="A4–A8 tasks divided by A2–A8 tasks">
+              A Approve Rate <b>${rate.approved}/${rate.denominator} · ${rate.percent.toFixed(0)}%</b>
+            </span>
+            <span class="chart-total">${total} total</span>
+          </div>
+        </div>
+        ${rows}
+      </div>`;
+    }).join('');
+
+    document.querySelectorAll('#statusCharts .srow').forEach(r=>{
+      r.addEventListener('mousemove',e=>{
+        const items=JSON.parse(decodeURIComponent(r.dataset.items));
+        const score=items.reduce((sum,item)=>sum+Number(item.score||0),0);
+        const taskHtml=items.map(item=>`<div class="tip-task">• ${esc(item.task)} <span style="color:#c9bfa8">(${Number(item.score||0).toFixed(2)} pts)</span></div>`).join('');
+
+        showTip(
+          `<div class="tip-head">${r.dataset.name} · ${r.dataset.code}</div>
+           <div class="tip-sub">${STATUS_FULL[r.dataset.code]||esc(r.dataset.code)}</div>
+           <div>${items.length} tasks · ${score.toFixed(2)} total pts</div>
+           ${taskHtml}`,
+          e
+        );
+      });
+      r.addEventListener('mouseleave',hideTip);
+    });
+  }
+
+  function renderOverview(f,visible){
+    // Potential overview
+    document.getElementById('potentialOverview').innerHTML=visible.map(name=>{
+      const p=getPotentialInfo(f,name);
+      let actionText='Already at the highest Performance Tier.';
+
+      if(p.tier.gap>0&&p.neededTasks===null){
+        actionText=`<span class="warning">${p.candidates.length} A2–A3 tasks are not enough to close the full tier gap.</span>`;
+      }else if(p.tier.gap>0){
+        actionText=`Upgrade about <b>${p.neededTasks}</b> A2–A3 task${p.neededTasks===1?'':'s'} to A4.`;
+      }
+
+      return `<div class="potential-card">
+        <div class="potential-name">${name}</div>
+        <div class="potential-main">
+          Current score: <b>${p.score.toFixed(2)}</b><br>
+          Current tier: ${p.tier.name}<br>
+          Next tier: <b>${p.tier.nextName}</b><br>
+          Score gap: <b>${p.tier.gap.toFixed(2)}</b> pts<br>
+          ${actionText}
+        </div>
+        <div class="potential-sub">
+          A2–A3 potential pool: ${p.candidates.length} tasks · up to +${p.totalPotential.toFixed(2)} pts if all move to A4.
+        </div>
+      </div>`;
+    }).join('');
+
+    // ---------- BY STATUS: cumulative score ----------
+    const cumulative={};
+    let maxScore=0;
+
+    visible.forEach(name=>{
+      let running=0;
+      cumulative[name]={};
+
+      OV_CODES.forEach(code=>{
+        running+=f
+          .filter(t=>t.designer===name&&t.statusCode===code)
+          .reduce((sum,t)=>sum+Number(t.oScore||0),0);
+
+        cumulative[name][code]=running;
+        maxScore=Math.max(maxScore,running);
+      });
+    });
+
+    const sc=niceScale(maxScore);
+    const W=1040,H=440,mL=48,mR=18,mT=20,mB=42;
+    const pL=mL,pR=W-mR,pT=mT,pB=H-mB,pW=pR-pL,pH=pB-pT;
+    const gW=pW/OV_CODES.length;
+    const nb=visible.length;
+    const barW=Math.min(20,(gW*.62)/Math.max(nb,1));
+    const gap=3;
+    const y=v=>pB-(v/sc.max)*pH;
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+
+    [{s:2,e:6,fill:'rgba(47,158,95,.09)'},{s:9,e:10,fill:'rgba(221,106,58,.09)'}]
+      .forEach(zone=>{
+        svg+=`<rect x="${pL+gW*zone.s}" y="${pT}" width="${gW*(zone.e-zone.s+1)}" height="${pH}" fill="${zone.fill}"/>`;
+      });
+
+    for(let v=0;v<=sc.max;v+=sc.step){
+      const yy=y(v);
+      svg+=`<line x1="${pL}" y1="${yy}" x2="${pR}" y2="${yy}" stroke="#e7dfce"/>
+            <text x="${pL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#a89e8c">${v}</text>`;
+    }
+
+    OV_CODES.forEach((code,i)=>{
+      const cx=pL+gW*(i+.5);
+      const win=WINS.includes(code);
+      const brand=code[0]==='C';
+
+      visible.forEach((name,j)=>{
+        const value=cumulative[name][code]||0;
+        const offset=(j-(nb-1)/2)*(barW+gap);
+        const bx=cx+offset-barW/2;
+        const bh=(value/sc.max)*pH;
+
+        if(value>0){
+          svg+=`<rect class="bar-r" x="${bx.toFixed(1)}" y="${y(value).toFixed(1)}"
+                    width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" rx="3"
+                    fill="${DCOLORS[name]}" data-n="${name}" data-c="${code}" data-v="${value.toFixed(2)}"/>`;
+        }
+      });
+
+      svg+=`<text x="${cx}" y="${pB+20}" text-anchor="middle" font-size="12" font-weight="800"
+                  fill="${win?'#2f9e5f':(brand?'#dd6a3a':'#4a443b')}">${code}</text>`;
+    });
+
+    svg+=`</svg>`;
+    document.getElementById('overviewChart').innerHTML=svg;
+
+    document.getElementById('ovLegendS').innerHTML=visible.map(name=>{
+      const total=f.filter(t=>t.designer===name).reduce((sum,t)=>sum+Number(t.oScore||0),0);
+      return `<div class="legend-item"><span class="swatch" style="background:${DCOLORS[name]}"></span>${name}
+        <b style="font-family:'JetBrains Mono',monospace;margin-left:2px">${total.toFixed(2)}</b></div>`;
+    }).join('')
+      +`<div class="legend-item"><span class="swatch" style="background:rgba(47,158,95,.25)"></span>A4–A8 Approved</div>
+        <div class="legend-item"><span class="swatch" style="background:rgba(221,106,58,.25)"></span>C1–C2 Branding</div>`;
+
+    document.querySelectorAll('#overviewChart .bar-r').forEach(bar=>{
+      bar.addEventListener('mousemove',e=>{
+        showTip(
+          `<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[bar.dataset.n]}"></span>${bar.dataset.n} · ${bar.dataset.c}</div>
+           <div class="tip-sub">${STATUS_FULL[bar.dataset.c]||esc(bar.dataset.c)}</div>
+           <div>Cumulative score: ${Number(bar.dataset.v).toFixed(2)}</div>`,
+          e
+        );
+      });
+      bar.addEventListener('mouseleave',hideTip);
+    });
+
+    // ---------- OVER TIME: cumulative score ----------
+    const validDates=f.map(t=>t.endDateValue).filter(Boolean).sort();
+    let weeks=[];
+
+    if(validDates.length){
+      const first=new Date(validDates[0]+'T00:00:00');
+      const last=new Date(validDates[validDates.length-1]+'T00:00:00');
+      const start=new Date(first);
+      start.setDate(start.getDate()-((start.getDay()+6)%7));
+      const finish=new Date(last);
+      finish.setDate(finish.getDate()+(6-((finish.getDay()+6)%7)));
+
+      for(let d=new Date(start);d<=finish;d.setDate(d.getDate()+7)){
+        weeks.push(new Date(d));
+      }
+    }
+
+    if(weeks.length<2){
+      const d=weeks[0]||new Date();
+      weeks=[new Date(d),new Date(d.getFullYear(),d.getMonth(),d.getDate()+7)];
+    }
+
+    const weekLabels=weeks.map(d=>(d.getMonth()+1)+'/'+d.getDate());
+    const weekIndex=dateString=>{
+      const date=new Date(dateString+'T00:00:00');
+      let index=0;
+      for(let i=0;i<weeks.length;i++){
+        if(weeks[i]<=date)index=i;
+      }
+      return index;
+    };
+
+    const series={};
+
+    visible.forEach(name=>{
+      const weeklyScore=Array(weeks.length).fill(0);
+
+      f.filter(t=>t.designer===name&&t.endDateValue).forEach(t=>{
+        weeklyScore[weekIndex(t.endDateValue)]+=Number(t.oScore||0);
+      });
+
+      let running=0;
+      series[name]=weeklyScore.map(value=>{
+        running+=value;
+        return running;
+      });
+    });
+
+    const maxCumulative=Math.max(1,...visible.map(name=>series[name][series[name].length-1]||0));
+    const timeScale=niceScale(maxCumulative);
+    const yTime=value=>pB-(value/timeScale.max)*pH;
+    const xTime=index=>pL+(pW*(index/(weeks.length-1)));
+
+    let timeline=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+
+    for(let value=0;value<=timeScale.max;value+=timeScale.step){
+      const yy=yTime(value);
+      timeline+=`<line x1="${pL}" y1="${yy}" x2="${pR}" y2="${yy}" stroke="#e7dfce"/>
+                 <text x="${pL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#a89e8c">${value}</text>`;
+    }
+
+    weekLabels.forEach((label,index)=>{
+      const every=Math.max(1,Math.ceil(weekLabels.length/7));
+      if(index%every===0||index===weekLabels.length-1){
+        timeline+=`<text x="${xTime(index)}" y="${pB+20}" text-anchor="middle" font-size="11" fill="#6f685c">${label}</text>`;
+      }
+    });
+
+    visible.forEach(name=>{
+      const points=series[name].map((value,index)=>`${xTime(index).toFixed(1)},${yTime(value).toFixed(1)}`).join(' ');
+      timeline+=`<polyline points="${points}" fill="none" stroke="${DCOLORS[name]}" stroke-width="2.5" stroke-linejoin="round"/>`;
+
+      series[name].forEach((value,index)=>{
+        const isLast=index===series[name].length-1;
+        timeline+=`<circle class="tl-dot" cx="${xTime(index).toFixed(1)}" cy="${yTime(value).toFixed(1)}"
+                           r="${isLast?'5':'3.5'}" fill="${DCOLORS[name]}"
+                           data-n="${name}" data-w="${weekLabels[index]}" data-v="${value.toFixed(2)}"/>`;
+
+        if(isLast){
+          timeline+=`<text class="final-score-label" x="${(xTime(index)+9).toFixed(1)}" y="${(yTime(value)+4).toFixed(1)}"
+                          fill="${DCOLORS[name]}">${value.toFixed(2)}</text>`;
+        }
+      });
+    });
+
+    timeline+=`</svg>`;
+    document.getElementById('timelineChart').innerHTML=timeline;
+
+    document.getElementById('ovLegendT').innerHTML=visible.map(name=>{
+      const finalScore=series[name][series[name].length-1]||0;
+      return `<div class="legend-item"><span class="swatch" style="background:${DCOLORS[name]};border-radius:999px"></span>${name}
+        <b style="font-family:'JetBrains Mono',monospace;margin-left:2px">${finalScore.toFixed(2)}</b></div>`;
+    }).join('');
+
+    document.querySelectorAll('#timelineChart .tl-dot').forEach(dot=>{
+      dot.addEventListener('mousemove',e=>{
+        dot.setAttribute('r','5');
+        showTip(
+          `<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[dot.dataset.n]};border-radius:999px"></span>${dot.dataset.n}</div>
+           <div class="tip-sub">Week of ${dot.dataset.w}</div>
+           <div>Cumulative score: ${Number(dot.dataset.v).toFixed(2)}</div>`,
+          e
+        );
+      });
+
+      dot.addEventListener('mouseleave',()=>{
+        if(!dot.nextElementSibling||!dot.nextElementSibling.classList.contains('final-score-label')){
+          dot.setAttribute('r','3.5');
+        }
+        hideTip();
+      });
+    });
+  }
+
+  function renderDesignerList(f,visible){
+    const wrap=document.getElementById('designerList');
+    if(!f.length){wrap.innerHTML='<div class="empty">No matching tasks. Try clearing the search or widening the date range.</div>';return;}
+    wrap.innerHTML=visible.map((n,i)=>{
+      const ts=f.filter(t=>t.designer===n);if(!ts.length)return'';
+      const tot=ts.reduce((a,t)=>a+t.oScore,0);const w=Math.min(tot/50*100,100);const open=i===0;
+      const byCode={};ts.forEach(t=>byCode[t.statusCode]=(byCode[t.statusCode]||0)+1);
+      const inline=STATUS_ORDER.filter(c=>byCode[c]).map(c=>`${c}: ${byCode[c]}`).join(' · ');
+      const rows=ts.map(t=>{const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
+        return `<div class="task-row"><div class="task-top"><div class="task-title">${esc(t.task)}</div><div class="status-badge">${full}</div></div>
+        <div class="task-meta">
+          <span class="pill">Type: ${esc(t.type||'No Type')}</span>
+          <span class="pill">Status Code: ${full}</span>
+          <span class="pill">End Date: ${esc(t.endDate||'-')}</span>
+          <span class="pill">Quarter: ${esc(formatQuarter(t.quarter||'-'))}</span>
+          <span class="pill">Type: <b>${t.mScore.toFixed(2)}</b></span>
+          <span class="pill">Status: <b>${t.nScore.toFixed(2)}</b></span>
+          <span class="pill">Score: <b>${t.oScore.toFixed(2)}</b></span>
+        </div>
+        <div class="formula">${esc(t.type||'No Type')} × ${full}<br>${t.mScore.toFixed(2)} × ${t.nScore.toFixed(2)} = ${t.oScore.toFixed(2)}</div></div>`;}).join('');
+      return `<div class="designer-section">
+        <div class="designer-header" onclick="const l=this.parentNode.querySelector('.task-list');const a=this.querySelector('.arw');const o=l.style.display!=='none';l.style.display=o?'none':'block';a.innerText=o?'▼':'▲';">
+          <div class="avatar">${n[0]}</div>
+          <div class="designer-info"><div class="designer-name">${n}</div><div class="designer-meta">${ts.length} tasks · ${inline}</div></div>
+          <div class="designer-total"><div class="num">${tot.toFixed(2)}</div><div class="text">Total Score</div></div>
+          <div class="arw" style="color:var(--muted)">${open?'▲':'▼'}</div>
+        </div>
+        <div class="bar"><div class="bar-fill" style="width:${w}%"></div></div>
+        <div class="task-list" style="display:${open?'block':'none'}">${rows}</div>
+      </div>`;
+    }).join('');
+  }
+
+  loadData();
+  setInterval(loadData,120000);
+</script>
+</body>
+</html>
