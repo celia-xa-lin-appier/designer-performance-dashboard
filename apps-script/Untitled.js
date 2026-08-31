@@ -169,6 +169,42 @@ function setCachedDashboardJson(json) {
   );
 }
 
+/**
+ * Keeps the cache warm in the background so a visitor's google.script.run
+ * call almost always hits a cache entry instead of waiting on a live
+ * Sheets read. Installed as a time-driven trigger by setupCacheTrigger();
+ * not called by the page itself.
+ */
+function refreshDashboardCache() {
+  const lock = LockService.getScriptLock();
+  const hasLock = lock.tryLock(10000);
+  if (!hasLock) return;
+
+  try {
+    const data = getDashboardData();
+    setCachedDashboardJson(JSON.stringify(data));
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Run once manually from the Apps Script editor to install the background
+ * refresh trigger. Safe to re-run — only clears a prior
+ * refreshDashboardCache trigger first, so it never stacks duplicates and
+ * never touches importWithFormat's trigger in Code (DO NOT EDIT).js.
+ */
+function setupCacheTrigger() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'refreshDashboardCache')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+
+  ScriptApp.newTrigger('refreshDashboardCache')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+}
+
 function clearDashboardCache() {
   const cache = CacheService.getScriptCache();
   const metaText = cache.get(`${CACHE_KEY_PREFIX}:meta`);
