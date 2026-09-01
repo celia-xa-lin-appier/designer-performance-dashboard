@@ -173,16 +173,19 @@
   .bar{height:3px;background:var(--border);}
   .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
   .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
-  .heatmap-wrap{overflow-x:auto;padding-bottom:6px;}
-  .heatmap-wrap svg{display:block;}
-  .heatmap-cell{cursor:pointer;transition:stroke .1s;}
-  .heatmap-cell:hover{stroke:var(--ink);stroke-width:1.5;}
-  .heatmap-detail{background:var(--inset);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin:10px 0;min-height:20px;font-size:12.5px;}
-  .heatmap-hint{color:var(--faint);}
-  .heatmap-detail-head{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--ink);margin-bottom:6px;}
-  .heatmap-detail-tasks{display:flex;flex-wrap:wrap;gap:6px;}
-  .heatmap-task{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:12px;color:var(--ink2);}
-  .heatmap-task b{color:var(--terra);font-family:'JetBrains Mono',monospace;margin-left:4px;}
+  .cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px;}
+  .cal-nav-btn{border:1px solid var(--border2);background:var(--card2);color:var(--ink);border-radius:8px;padding:4px 12px;font-size:16px;font-weight:800;cursor:pointer;min-height:auto;}
+  .cal-nav-btn:hover{background:var(--inset);}
+  .cal-nav-label{font-family:'Epilogue',sans-serif;font-weight:800;font-size:14px;color:var(--ink);min-width:130px;text-align:center;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px;}
+  .cal-dow{text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding-bottom:4px;}
+  .cal-cell{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px;min-height:64px;display:flex;flex-direction:column;gap:3px;overflow:hidden;}
+  .cal-cell-empty{background:transparent;border-color:transparent;}
+  .cal-cell.has-tasks{background:var(--inset);}
+  .cal-daynum{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);}
+  .cal-daynum.cal-today{color:#fff;background:var(--terra);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .cal-chip{color:#fff;font-size:10px;font-weight:600;border-radius:4px;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;}
+  .cal-more{font-size:10px;color:var(--muted);font-weight:700;padding:0 3px;cursor:default;}
   .heatmap-toggle{margin-bottom:4px;font-size:12.5px;padding:8px 14px;min-height:auto;}
   .task-row{background:var(--inset);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;}
   .task-top{display:flex;gap:10px;align-items:flex-start;}
@@ -959,69 +962,83 @@
     });
   }
 
-  function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const calState={};
 
-  function buildHeatmap(ts,designer,uid){
+  function renderCalendarInto(uid){
+    const state=calState[uid];
+    if(!state)return;
+    const{tasks,year,month}=state;
     const dayMap={};
-    ts.forEach(t=>{
+    tasks.forEach(t=>{
       const d=t.endDateValue||t.startDateValue;
       if(!d)return;
-      if(!dayMap[d])dayMap[d]={score:0,tasks:[]};
-      dayMap[d].score+=Number(t.oScore||0);
-      dayMap[d].tasks.push(t);
-    });
-
-    const dates=Object.keys(dayMap).sort();
-    if(!dates.length)return '<div class="empty-mini">No dated tasks to plot.</div>';
-
-    const first=new Date(dates[0]+'T00:00:00');
-    const last=new Date(dates[dates.length-1]+'T00:00:00');
-    const start=new Date(first);start.setDate(start.getDate()-((start.getDay()+6)%7));
-    const finish=new Date(last);finish.setDate(finish.getDate()+(6-((finish.getDay()+6)%7)));
-
-    const days=[];
-    for(let d=new Date(start);d<=finish;d.setDate(d.getDate()+1))days.push(new Date(d));
-    const weeks=Math.ceil(days.length/7);
-
-    const cell=13,gap=3,mL=28,mT=14;
-    const W=mL+weeks*(cell+gap),H=mT+7*(cell+gap);
-    const maxScore=Math.max(...Object.values(dayMap).map(d=>d.score),0.01);
-    const color=DCOLORS[designer]||'#888';
-
-    const dowLabel=['Mon','','Wed','','Fri','',''];
-    let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" xmlns="http://www.w3.org/2000/svg">`;
-    for(let r=0;r<7;r++){
-      if(dowLabel[r])svg+=`<text x="0" y="${mT+r*(cell+gap)+cell-2}" font-size="9" fill="#a89e8c">${dowLabel[r]}</text>`;
-    }
-
-    let lastMonth=null;
-    days.forEach((day,i)=>{
-      const week=Math.floor(i/7),dow=(day.getDay()+6)%7;
-      const x=mL+week*(cell+gap),y=mT+dow*(cell+gap);
-      const key=dateKey(day);
-      const info=dayMap[key];
-      const score=info?info.score:0;
-      const opacity=info?Math.max(.18,score/maxScore):0;
-      const fillAttr=info?`fill="${color}" fill-opacity="${opacity.toFixed(2)}"`:`fill="var(--border)"`;
-      const tasksEnc=info?encodeURIComponent(JSON.stringify(info.tasks.map(t=>({task:t.task,score:Number(t.oScore||0)})))):'';
-      svg+=`<rect class="heatmap-cell" x="${x}" y="${y}" width="${cell}" height="${cell}" rx="3" ${fillAttr}
-              data-date="${key}" data-score="${score.toFixed(2)}" data-tasks="${tasksEnc}" data-uid="${uid}"/>`;
-      if(dow===0&&day.getDate()<=7&&day.getMonth()!==lastMonth){
-        lastMonth=day.getMonth();
-        svg+=`<text x="${x}" y="${mT-4}" font-size="9" fill="#a89e8c">${day.getMonth()+1}/${day.getFullYear().toString().slice(2)}</text>`;
+      const dt=new Date(d+'T00:00:00');
+      if(dt.getFullYear()===year&&dt.getMonth()===month){
+        if(!dayMap[dt.getDate()])dayMap[dt.getDate()]=[];
+        dayMap[dt.getDate()].push(t);
       }
     });
-    svg+='</svg>';
-    return svg;
+
+    const daysInMonth=new Date(year,month+1,0).getDate();
+    const startDow=new Date(year,month,1).getDay();
+    const cells=[];
+    for(let i=0;i<startDow;i++)cells.push(null);
+    for(let d=1;d<=daysInMonth;d++)cells.push(d);
+    while(cells.length%7!==0)cells.push(null);
+
+    const color=DCOLORS[state.designer]||'#888';
+    const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const today=new Date();
+    const isCurrentMonth=today.getFullYear()===year&&today.getMonth()===month;
+
+    let html=dowNames.map(n=>`<div class="cal-dow">${n}</div>`).join('');
+    html+=cells.map(day=>{
+      if(day===null)return '<div class="cal-cell cal-cell-empty"></div>';
+      const dayTasks=dayMap[day]||[];
+      const isToday=isCurrentMonth&&today.getDate()===day;
+      const chips=dayTasks.slice(0,2).map(t=>{
+        const enc=encodeURIComponent(JSON.stringify({task:t.task,score:Number(t.oScore||0),status:t.status||t.statusCode}));
+        return `<div class="cal-chip" style="background:${color}" data-info="${enc}">${esc(t.task)}</div>`;
+      }).join('');
+      const rest=dayTasks.length>2?dayTasks.slice(2):[];
+      const more=rest.length?`<div class="cal-more" data-info="${encodeURIComponent(JSON.stringify(rest.map(t=>({task:t.task,score:Number(t.oScore||0),status:t.status||t.statusCode}))))}">+${rest.length} more</div>`:'';
+      return `<div class="cal-cell${dayTasks.length?' has-tasks':''}">
+        <div class="cal-daynum${isToday?' cal-today':''}">${day}</div>
+        ${chips}${more}
+      </div>`;
+    }).join('');
+
+    const grid=document.getElementById(`calGrid-${uid}`);
+    grid.innerHTML=html;
+    document.getElementById(`calLabel-${uid}`).innerText=`${MONTH_NAMES[month]} ${year}`;
+
+    grid.querySelectorAll('.cal-chip').forEach(chip=>{
+      chip.addEventListener('mousemove',e=>{
+        const info=JSON.parse(decodeURIComponent(chip.dataset.info));
+        showTip(`<div class="tip-head">${esc(info.task)}</div><div class="tip-sub">${esc(info.status||'')}</div><div>${info.score.toFixed(2)} pts</div>`,e);
+      });
+      chip.addEventListener('mouseleave',hideTip);
+    });
+    grid.querySelectorAll('.cal-more').forEach(el=>{
+      el.addEventListener('mousemove',e=>{
+        const items=JSON.parse(decodeURIComponent(el.dataset.info));
+        const rows=items.map(t=>`<div class="tip-task">• ${esc(t.task)} <span style="color:#c9bfa8">(${t.score.toFixed(2)} pts)</span></div>`).join('');
+        showTip(`<div class="tip-head">${items.length} more task${items.length===1?'':'s'}</div>${rows}`,e);
+      });
+      el.addEventListener('mouseleave',hideTip);
+    });
   }
 
-  function renderHeatmapDetail(panelId,date,score,tasksJson){
-    const panel=document.getElementById(panelId);
-    if(!date){panel.innerHTML='<span class="heatmap-hint">Hover or tap a day to see what shipped that day.</span>';return;}
-    const tasks=tasksJson?JSON.parse(decodeURIComponent(tasksJson)):[];
-    if(!tasks.length){panel.innerHTML=`<span class="heatmap-hint">${esc(date)} · no scored tasks.</span>`;return;}
-    const rows=tasks.map(t=>`<span class="heatmap-task">${esc(t.task)} <b>${Number(t.score).toFixed(2)}</b></span>`).join('');
-    panel.innerHTML=`<div class="heatmap-detail-head">${esc(date)} · ${Number(score).toFixed(2)} pts</div><div class="heatmap-detail-tasks">${rows}</div>`;
+  function shiftCalMonth(uid,delta){
+    const state=calState[uid];
+    if(!state)return;
+    let{year,month}=state;
+    month+=delta;
+    if(month<0){month=11;year--;}
+    if(month>11){month=0;year++;}
+    state.year=year;state.month=month;
+    renderCalendarInto(uid);
   }
 
   function renderDesignerList(f,visible){
@@ -1054,19 +1071,27 @@
         </div>
         <div class="bar"><div class="bar-fill" style="width:${w}%"></div></div>
         <div class="task-list" style="display:${open?'block':'none'}">
-          <div class="heatmap-wrap">${buildHeatmap(ts,n,uid)}</div>
-          <div class="heatmap-detail" id="heatmapDetail-${uid}"><span class="heatmap-hint">Hover or tap a day to see what shipped that day.</span></div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="shiftCalMonth('${uid}',-1)">‹</button>
+            <div class="cal-nav-label" id="calLabel-${uid}"></div>
+            <button class="cal-nav-btn" onclick="shiftCalMonth('${uid}',1)">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid-${uid}"></div>
           <button class="secondary heatmap-toggle" onclick="const l=this.nextElementSibling;const o=l.style.display!=='none';l.style.display=o?'none':'block';this.innerText=o?'Show full task list (${ts.length})':'Hide full task list';">Show full task list (${ts.length})</button>
           <div class="full-task-rows" style="display:none">${rows}</div>
         </div>
       </div>`;
     }).join('');
 
-    wrap.querySelectorAll('.heatmap-cell').forEach(cell=>{
-      const show=()=>renderHeatmapDetail(`heatmapDetail-${cell.dataset.uid}`,cell.dataset.date,cell.dataset.score,cell.dataset.tasks);
-      cell.addEventListener('mouseenter',show);
-      cell.addEventListener('click',show);
+    visible.forEach(n=>{
+      const ts=f.filter(t=>t.designer===n);if(!ts.length)return;
+      const uid=n.replace(/[^a-z0-9]/gi,'');
+      const dated=ts.map(t=>t.endDateValue||t.startDateValue).filter(Boolean).sort();
+      const latest=dated.length?new Date(dated[dated.length-1]+'T00:00:00'):new Date();
+      calState[uid]={tasks:ts,designer:n,year:latest.getFullYear(),month:latest.getMonth()};
+      renderCalendarInto(uid);
     });
+
   }
 
   loadData();
