@@ -1,12 +1,16 @@
-const SPREADSHEET_ID = '1E144XQoWjzOpUMnDgZidejV4LOiUGZBT5hoPlp3nzko';
 const DESIGNERS = ['Kathy', 'Lin', 'Min'];
 
-// Reads straight from a designer's own spreadsheet instead of the synced
-// copy in Designer Calculator. Reading has never needed write access, so
-// this sidesteps a designer's tab being blocked by a protected range there
-// (e.g. Min's — see today's "protected cell" sync failures) without
-// touching Code (DO NOT EDIT).js's sync at all.
-const DESIGNER_SOURCE_OVERRIDE = {
+// The dashboard reads each designer's tasks straight from her own
+// spreadsheet — not from the synced copy in Designer Calculator. Reading
+// has never needed write access, so this is immune to a designer's tab in
+// Designer Calculator being blocked by a protected range there (as
+// happened with Min's). Code (DO NOT EDIT).js keeps syncing List data into
+// Designer Calculator on its own schedule, independent of this — that
+// copy now exists for the "Q3 Designer status" pivot table and manual
+// review, not for the dashboard itself.
+const DESIGNER_SOURCES = {
+  Kathy: { spreadsheetId: '1nfSmY4GeRLuy3YmOXhjiJ1cnfNkXa9Q_LDXyj5mUd-E', sheetName: 'List' },
+  Lin: { spreadsheetId: '1S6WO4uedwmJ2aGpGPVK906ab6x0YO0GoxSbGmGV9uyU', sheetName: 'List' },
   Min: { spreadsheetId: '1ZqI-v3RNYPX8s648VAfQxDoDvKaRqWJcvQf1YSDCeRI', sheetName: 'List' }
 };
 
@@ -96,14 +100,12 @@ function getDashboardPayload() {
  * Uses one getValues() call per designer sheet.
  */
 function getDashboardData() {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
   const tasks = [];
 
   DESIGNERS.forEach(designer => {
-    const override = DESIGNER_SOURCE_OVERRIDE[designer];
-    const sheet = override
-      ? SpreadsheetApp.openById(override.spreadsheetId).getSheetByName(override.sheetName)
-      : ss.getSheetByName(designer);
+    const source = DESIGNER_SOURCES[designer];
+    if (!source) return;
+    const sheet = SpreadsheetApp.openById(source.spreadsheetId).getSheetByName(source.sheetName);
     if (!sheet) return;
 
     const lastRow = sheet.getLastRow();
