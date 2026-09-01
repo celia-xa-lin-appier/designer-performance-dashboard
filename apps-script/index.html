@@ -173,9 +173,9 @@
   .bar{height:3px;background:var(--border);}
   .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
   .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
-  .task-row{display:flex;align-items:center;gap:12px;background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:6px;}
-  .task-date{flex-shrink:0;width:64px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);}
-  .task-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:700;color:var(--ink);}
+  .task-row{display:flex;align-items:flex-start;gap:12px;background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:6px;}
+  .task-date{flex-shrink:0;width:52px;padding-top:1px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);}
+  .task-name{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink);line-height:1.4;}
   .pill-formula{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ink2);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;white-space:nowrap;}
   .pill-formula b{color:var(--terra);font-weight:800;}
   .pill-formula.win{color:var(--green);background:#e7f2ec;border-color:#b6d8c4;}
@@ -392,6 +392,13 @@
     const q=String(value||'').trim();
     const m=q.match(/^(\d{4})Q([1-4])$/i);
     return m?`Q${m[2]} ${m[1]}`:q;
+  }
+
+  function shortDate(dateValue){
+    if(!dateValue)return '—';
+    const d=new Date(dateValue+'T00:00:00');
+    if(isNaN(d.getTime()))return '—';
+    return `${String(d.getFullYear()).slice(2)}/${d.getMonth()+1}/${d.getDate()}`;
   }
 
   function setupQuarterOptions(){
@@ -961,9 +968,9 @@
         const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
         const win=WINS.includes(t.statusCode);
         return `<div class="task-row">
-          <div class="task-date">${esc(t.endDate||'—')}</div>
-          <div class="task-name" title="${esc(t.task)}">${esc(t.task)}</div>
-          <span class="pill-formula${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)} × ${esc(t.type||'No Type')} = <b>${t.oScore.toFixed(2)}</b></span>
+          <div class="task-date">${esc(shortDate(t.endDateValue||t.startDateValue))}</div>
+          <div class="task-name">${esc(t.task)}</div>
+          <span class="pill-formula${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)} (${t.nScore.toFixed(2)}) × ${esc(t.type||'No Type')} (×${t.mScore.toFixed(2)}) = <b>${t.oScore.toFixed(2)}</b></span>
         </div>`;
       }).join('');
       return `<div class="designer-section">
