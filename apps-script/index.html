@@ -173,13 +173,13 @@
   .bar{height:3px;background:var(--border);}
   .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
   .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
-  .task-row{display:flex;align-items:center;gap:10px;background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:6px;}
+  .task-row{display:flex;align-items:center;gap:12px;background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:6px;}
+  .task-date{flex-shrink:0;width:64px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);}
   .task-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:700;color:var(--ink);}
-  .task-info{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-  .pill{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;font-weight:600;font-size:12px;color:var(--ink2);white-space:nowrap;}
-  .pill-score{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--terra);}
-  .status-badge{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--ink2);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;white-space:nowrap;}
-  .status-badge.win{color:var(--green);background:#e7f2ec;border-color:#b6d8c4;}
+  .pill-formula{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ink2);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;white-space:nowrap;}
+  .pill-formula b{color:var(--terra);font-weight:800;}
+  .pill-formula.win{color:var(--green);background:#e7f2ec;border-color:#b6d8c4;}
+  .pill-formula.win b{color:var(--green);}
   .empty{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;color:var(--muted);}
 
   #tip{position:fixed;pointer-events:none;z-index:99;background:var(--ink);color:#f6f2ea;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:320px;opacity:0;transition:opacity .12s;}
@@ -955,19 +955,15 @@
       const tot=ts.reduce((a,t)=>a+t.oScore,0);const w=Math.min(tot/50*100,100);const open=i===0;
       const byCode={};ts.forEach(t=>byCode[t.statusCode]=(byCode[t.statusCode]||0)+1);
       const inline=STATUS_ORDER.filter(c=>byCode[c]).map(c=>`${c}: ${byCode[c]}`).join(' · ');
-      // Highest-value work first — the score is the point, not when or how much.
-      const sorted=[...ts].sort((a,b)=>b.oScore-a.oScore);
+      // Most recent first; undated tasks (no end or start date) sort last.
+      const sorted=[...ts].sort((a,b)=>(b.endDateValue||b.startDateValue||'').localeCompare(a.endDateValue||a.startDateValue||''));
       const rows=sorted.map(t=>{
         const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
         const win=WINS.includes(t.statusCode);
         return `<div class="task-row">
+          <div class="task-date">${esc(t.endDate||'—')}</div>
           <div class="task-name" title="${esc(t.task)}">${esc(t.task)}</div>
-          <div class="task-info">
-            <span class="pill">${esc(t.type||'No Type')}</span>
-            <span class="status-badge${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)}</span>
-            <span class="pill">${esc(t.endDate||'—')}</span>
-            <span class="pill pill-score">${t.oScore.toFixed(2)}</span>
-          </div>
+          <span class="pill-formula${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)} × ${esc(t.type||'No Type')} = <b>${t.oScore.toFixed(2)}</b></span>
         </div>`;
       }).join('');
       return `<div class="designer-section">
