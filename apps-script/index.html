@@ -173,6 +173,17 @@
   .bar{height:3px;background:var(--border);}
   .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
   .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
+  .heatmap-wrap{overflow-x:auto;padding-bottom:6px;}
+  .heatmap-wrap svg{display:block;}
+  .heatmap-cell{cursor:pointer;transition:stroke .1s;}
+  .heatmap-cell:hover{stroke:var(--ink);stroke-width:1.5;}
+  .heatmap-detail{background:var(--inset);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin:10px 0;min-height:20px;font-size:12.5px;}
+  .heatmap-hint{color:var(--faint);}
+  .heatmap-detail-head{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--ink);margin-bottom:6px;}
+  .heatmap-detail-tasks{display:flex;flex-wrap:wrap;gap:6px;}
+  .heatmap-task{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;font-size:12px;color:var(--ink2);}
+  .heatmap-task b{color:var(--terra);font-family:'JetBrains Mono',monospace;margin-left:4px;}
+  .heatmap-toggle{margin-bottom:4px;font-size:12.5px;padding:8px 14px;min-height:auto;}
   .task-row{background:var(--inset);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;}
   .task-top{display:flex;gap:10px;align-items:flex-start;}
   .task-title{flex:1;font-size:14px;line-height:1.45;font-weight:700;color:var(--ink);}
@@ -948,12 +959,78 @@
     });
   }
 
+  function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+  function buildHeatmap(ts,designer,uid){
+    const dayMap={};
+    ts.forEach(t=>{
+      const d=t.endDateValue||t.startDateValue;
+      if(!d)return;
+      if(!dayMap[d])dayMap[d]={score:0,tasks:[]};
+      dayMap[d].score+=Number(t.oScore||0);
+      dayMap[d].tasks.push(t);
+    });
+
+    const dates=Object.keys(dayMap).sort();
+    if(!dates.length)return '<div class="empty-mini">No dated tasks to plot.</div>';
+
+    const first=new Date(dates[0]+'T00:00:00');
+    const last=new Date(dates[dates.length-1]+'T00:00:00');
+    const start=new Date(first);start.setDate(start.getDate()-((start.getDay()+6)%7));
+    const finish=new Date(last);finish.setDate(finish.getDate()+(6-((finish.getDay()+6)%7)));
+
+    const days=[];
+    for(let d=new Date(start);d<=finish;d.setDate(d.getDate()+1))days.push(new Date(d));
+    const weeks=Math.ceil(days.length/7);
+
+    const cell=13,gap=3,mL=28,mT=14;
+    const W=mL+weeks*(cell+gap),H=mT+7*(cell+gap);
+    const maxScore=Math.max(...Object.values(dayMap).map(d=>d.score),0.01);
+    const color=DCOLORS[designer]||'#888';
+
+    const dowLabel=['Mon','','Wed','','Fri','',''];
+    let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px" xmlns="http://www.w3.org/2000/svg">`;
+    for(let r=0;r<7;r++){
+      if(dowLabel[r])svg+=`<text x="0" y="${mT+r*(cell+gap)+cell-2}" font-size="9" fill="#a89e8c">${dowLabel[r]}</text>`;
+    }
+
+    let lastMonth=null;
+    days.forEach((day,i)=>{
+      const week=Math.floor(i/7),dow=(day.getDay()+6)%7;
+      const x=mL+week*(cell+gap),y=mT+dow*(cell+gap);
+      const key=dateKey(day);
+      const info=dayMap[key];
+      const score=info?info.score:0;
+      const opacity=info?Math.max(.18,score/maxScore):0;
+      const fillAttr=info?`fill="${color}" fill-opacity="${opacity.toFixed(2)}"`:`fill="var(--border)"`;
+      const tasksEnc=info?encodeURIComponent(JSON.stringify(info.tasks.map(t=>({task:t.task,score:Number(t.oScore||0)})))):'';
+      svg+=`<rect class="heatmap-cell" x="${x}" y="${y}" width="${cell}" height="${cell}" rx="3" ${fillAttr}
+              data-date="${key}" data-score="${score.toFixed(2)}" data-tasks="${tasksEnc}" data-uid="${uid}"/>`;
+      if(dow===0&&day.getDate()<=7&&day.getMonth()!==lastMonth){
+        lastMonth=day.getMonth();
+        svg+=`<text x="${x}" y="${mT-4}" font-size="9" fill="#a89e8c">${day.getMonth()+1}/${day.getFullYear().toString().slice(2)}</text>`;
+      }
+    });
+    svg+='</svg>';
+    return svg;
+  }
+
+  function renderHeatmapDetail(panelId,date,score,tasksJson){
+    const panel=document.getElementById(panelId);
+    if(!date){panel.innerHTML='<span class="heatmap-hint">Hover or tap a day to see what shipped that day.</span>';return;}
+    const tasks=tasksJson?JSON.parse(decodeURIComponent(tasksJson)):[];
+    if(!tasks.length){panel.innerHTML=`<span class="heatmap-hint">${esc(date)} · no scored tasks.</span>`;return;}
+    const rows=tasks.map(t=>`<span class="heatmap-task">${esc(t.task)} <b>${Number(t.score).toFixed(2)}</b></span>`).join('');
+    panel.innerHTML=`<div class="heatmap-detail-head">${esc(date)} · ${Number(score).toFixed(2)} pts</div><div class="heatmap-detail-tasks">${rows}</div>`;
+  }
+
   function renderDesignerList(f,visible){
     const wrap=document.getElementById('designerList');
     if(!f.length){wrap.innerHTML='<div class="empty">No matching tasks. Try clearing the search or widening the date range.</div>';return;}
     wrap.innerHTML=visible.map((n,i)=>{
       const ts=f.filter(t=>t.designer===n);if(!ts.length)return'';
       const tot=ts.reduce((a,t)=>a+t.oScore,0);const w=Math.min(tot/50*100,100);const open=i===0;
+      const uid=n.replace(/[^a-z0-9]/gi,'');
       const byCode={};ts.forEach(t=>byCode[t.statusCode]=(byCode[t.statusCode]||0)+1);
       const inline=STATUS_ORDER.filter(c=>byCode[c]).map(c=>`${c}: ${byCode[c]}`).join(' · ');
       const rows=ts.map(t=>{const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
@@ -976,9 +1053,20 @@
           <div class="arw" style="color:var(--muted)">${open?'▲':'▼'}</div>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${w}%"></div></div>
-        <div class="task-list" style="display:${open?'block':'none'}">${rows}</div>
+        <div class="task-list" style="display:${open?'block':'none'}">
+          <div class="heatmap-wrap">${buildHeatmap(ts,n,uid)}</div>
+          <div class="heatmap-detail" id="heatmapDetail-${uid}"><span class="heatmap-hint">Hover or tap a day to see what shipped that day.</span></div>
+          <button class="secondary heatmap-toggle" onclick="const l=this.nextElementSibling;const o=l.style.display!=='none';l.style.display=o?'none':'block';this.innerText=o?'Show full task list (${ts.length})':'Hide full task list';">Show full task list (${ts.length})</button>
+          <div class="full-task-rows" style="display:none">${rows}</div>
+        </div>
       </div>`;
     }).join('');
+
+    wrap.querySelectorAll('.heatmap-cell').forEach(cell=>{
+      const show=()=>renderHeatmapDetail(`heatmapDetail-${cell.dataset.uid}`,cell.dataset.date,cell.dataset.score,cell.dataset.tasks);
+      cell.addEventListener('mouseenter',show);
+      cell.addEventListener('click',show);
+    });
   }
 
   loadData();
