@@ -173,28 +173,13 @@
   .bar{height:3px;background:var(--border);}
   .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
   .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
-  .cal-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px;}
-  .cal-nav-btn{border:1px solid var(--border2);background:var(--card2);color:var(--ink);border-radius:8px;padding:4px 12px;font-size:16px;font-weight:800;cursor:pointer;min-height:auto;}
-  .cal-nav-btn:hover{background:var(--inset);}
-  .cal-nav-label{font-family:'Epilogue',sans-serif;font-weight:800;font-size:14px;color:var(--ink);min-width:130px;text-align:center;}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px;}
-  .cal-dow{text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding-bottom:4px;}
-  .cal-cell{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:5px;min-height:64px;display:flex;flex-direction:column;gap:3px;overflow:hidden;}
-  .cal-cell-empty{background:transparent;border-color:transparent;}
-  .cal-cell.has-tasks{background:var(--inset);}
-  .cal-daynum{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--muted);}
-  .cal-daynum.cal-today{color:#fff;background:var(--terra);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
-  .cal-chip{color:#fff;font-size:10px;font-weight:600;border-radius:4px;padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;}
-  .cal-more{font-size:10px;color:var(--muted);font-weight:700;padding:0 3px;cursor:default;}
-  .heatmap-toggle{margin-bottom:4px;font-size:12.5px;padding:8px 14px;min-height:auto;}
-  .task-row{background:var(--inset);border:1px solid var(--border);border-radius:11px;padding:12px 14px;margin-bottom:8px;}
-  .task-top{display:flex;gap:10px;align-items:flex-start;}
-  .task-title{flex:1;font-size:14px;line-height:1.45;font-weight:700;color:var(--ink);}
-  .status-badge{font-size:12px;color:var(--green);background:#e7f2ec;border:1px solid #b6d8c4;border-radius:6px;padding:3px 8px;font-weight:700;max-width:290px;}
-  .task-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;color:var(--ink2);font-size:12px;}
-  .pill{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;font-weight:600;}
-  .pill b{color:var(--terra);font-family:'JetBrains Mono',monospace;}
-  .formula{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);background:var(--card2);border:1px dashed var(--border2);border-radius:7px;padding:8px 10px;line-height:1.6;}
+  .task-row{display:flex;align-items:center;gap:10px;background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:6px;}
+  .task-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:700;color:var(--ink);}
+  .task-info{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .pill{background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;font-weight:600;font-size:12px;color:var(--ink2);white-space:nowrap;}
+  .pill-score{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--terra);}
+  .status-badge{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--ink2);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 8px;white-space:nowrap;}
+  .status-badge.win{color:var(--green);background:#e7f2ec;border-color:#b6d8c4;}
   .empty{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;color:var(--muted);}
 
   #tip{position:fixed;pointer-events:none;z-index:99;background:var(--ink);color:#f6f2ea;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:320px;opacity:0;transition:opacity .12s;}
@@ -962,106 +947,29 @@
     });
   }
 
-  const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const calState={};
-
-  function renderCalendarInto(uid){
-    const state=calState[uid];
-    if(!state)return;
-    const{tasks,year,month}=state;
-    const dayMap={};
-    tasks.forEach(t=>{
-      const d=t.endDateValue||t.startDateValue;
-      if(!d)return;
-      const dt=new Date(d+'T00:00:00');
-      if(dt.getFullYear()===year&&dt.getMonth()===month){
-        if(!dayMap[dt.getDate()])dayMap[dt.getDate()]=[];
-        dayMap[dt.getDate()].push(t);
-      }
-    });
-
-    const daysInMonth=new Date(year,month+1,0).getDate();
-    const startDow=new Date(year,month,1).getDay();
-    const cells=[];
-    for(let i=0;i<startDow;i++)cells.push(null);
-    for(let d=1;d<=daysInMonth;d++)cells.push(d);
-    while(cells.length%7!==0)cells.push(null);
-
-    const color=DCOLORS[state.designer]||'#888';
-    const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const today=new Date();
-    const isCurrentMonth=today.getFullYear()===year&&today.getMonth()===month;
-
-    let html=dowNames.map(n=>`<div class="cal-dow">${n}</div>`).join('');
-    html+=cells.map(day=>{
-      if(day===null)return '<div class="cal-cell cal-cell-empty"></div>';
-      const dayTasks=dayMap[day]||[];
-      const isToday=isCurrentMonth&&today.getDate()===day;
-      const chips=dayTasks.slice(0,2).map(t=>{
-        const enc=encodeURIComponent(JSON.stringify({task:t.task,score:Number(t.oScore||0),status:t.status||t.statusCode}));
-        return `<div class="cal-chip" style="background:${color}" data-info="${enc}">${esc(t.task)}</div>`;
-      }).join('');
-      const rest=dayTasks.length>2?dayTasks.slice(2):[];
-      const more=rest.length?`<div class="cal-more" data-info="${encodeURIComponent(JSON.stringify(rest.map(t=>({task:t.task,score:Number(t.oScore||0),status:t.status||t.statusCode}))))}">+${rest.length} more</div>`:'';
-      return `<div class="cal-cell${dayTasks.length?' has-tasks':''}">
-        <div class="cal-daynum${isToday?' cal-today':''}">${day}</div>
-        ${chips}${more}
-      </div>`;
-    }).join('');
-
-    const grid=document.getElementById(`calGrid-${uid}`);
-    grid.innerHTML=html;
-    document.getElementById(`calLabel-${uid}`).innerText=`${MONTH_NAMES[month]} ${year}`;
-
-    grid.querySelectorAll('.cal-chip').forEach(chip=>{
-      chip.addEventListener('mousemove',e=>{
-        const info=JSON.parse(decodeURIComponent(chip.dataset.info));
-        showTip(`<div class="tip-head">${esc(info.task)}</div><div class="tip-sub">${esc(info.status||'')}</div><div>${info.score.toFixed(2)} pts</div>`,e);
-      });
-      chip.addEventListener('mouseleave',hideTip);
-    });
-    grid.querySelectorAll('.cal-more').forEach(el=>{
-      el.addEventListener('mousemove',e=>{
-        const items=JSON.parse(decodeURIComponent(el.dataset.info));
-        const rows=items.map(t=>`<div class="tip-task">• ${esc(t.task)} <span style="color:#c9bfa8">(${t.score.toFixed(2)} pts)</span></div>`).join('');
-        showTip(`<div class="tip-head">${items.length} more task${items.length===1?'':'s'}</div>${rows}`,e);
-      });
-      el.addEventListener('mouseleave',hideTip);
-    });
-  }
-
-  function shiftCalMonth(uid,delta){
-    const state=calState[uid];
-    if(!state)return;
-    let{year,month}=state;
-    month+=delta;
-    if(month<0){month=11;year--;}
-    if(month>11){month=0;year++;}
-    state.year=year;state.month=month;
-    renderCalendarInto(uid);
-  }
-
   function renderDesignerList(f,visible){
     const wrap=document.getElementById('designerList');
     if(!f.length){wrap.innerHTML='<div class="empty">No matching tasks. Try clearing the search or widening the date range.</div>';return;}
     wrap.innerHTML=visible.map((n,i)=>{
       const ts=f.filter(t=>t.designer===n);if(!ts.length)return'';
       const tot=ts.reduce((a,t)=>a+t.oScore,0);const w=Math.min(tot/50*100,100);const open=i===0;
-      const uid=n.replace(/[^a-z0-9]/gi,'');
       const byCode={};ts.forEach(t=>byCode[t.statusCode]=(byCode[t.statusCode]||0)+1);
       const inline=STATUS_ORDER.filter(c=>byCode[c]).map(c=>`${c}: ${byCode[c]}`).join(' · ');
-      const rows=ts.map(t=>{const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
-        return `<div class="task-row"><div class="task-top"><div class="task-title">${esc(t.task)}</div><div class="status-badge">${full}</div></div>
-        <div class="task-meta">
-          <span class="pill">Type: ${esc(t.type||'No Type')}</span>
-          <span class="pill">Status Code: ${full}</span>
-          <span class="pill">End Date: ${esc(t.endDate||'-')}</span>
-          <span class="pill">Quarter: ${esc(formatQuarter(t.quarter||'-'))}</span>
-          <span class="pill">Type: <b>${t.mScore.toFixed(2)}</b></span>
-          <span class="pill">Status: <b>${t.nScore.toFixed(2)}</b></span>
-          <span class="pill">Score: <b>${t.oScore.toFixed(2)}</b></span>
-        </div>
-        <div class="formula">${esc(t.type||'No Type')} × ${full}<br>${t.mScore.toFixed(2)} × ${t.nScore.toFixed(2)} = ${t.oScore.toFixed(2)}</div></div>`;}).join('');
+      // Highest-value work first — the score is the point, not when or how much.
+      const sorted=[...ts].sort((a,b)=>b.oScore-a.oScore);
+      const rows=sorted.map(t=>{
+        const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
+        const win=WINS.includes(t.statusCode);
+        return `<div class="task-row">
+          <div class="task-name" title="${esc(t.task)}">${esc(t.task)}</div>
+          <div class="task-info">
+            <span class="pill">${esc(t.type||'No Type')}</span>
+            <span class="status-badge${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)}</span>
+            <span class="pill">${esc(t.endDate||'—')}</span>
+            <span class="pill pill-score">${t.oScore.toFixed(2)}</span>
+          </div>
+        </div>`;
+      }).join('');
       return `<div class="designer-section">
         <div class="designer-header" onclick="const l=this.parentNode.querySelector('.task-list');const a=this.querySelector('.arw');const o=l.style.display!=='none';l.style.display=o?'none':'block';a.innerText=o?'▼':'▲';">
           <div class="avatar">${n[0]}</div>
@@ -1070,28 +978,9 @@
           <div class="arw" style="color:var(--muted)">${open?'▲':'▼'}</div>
         </div>
         <div class="bar"><div class="bar-fill" style="width:${w}%"></div></div>
-        <div class="task-list" style="display:${open?'block':'none'}">
-          <div class="cal-nav">
-            <button class="cal-nav-btn" onclick="shiftCalMonth('${uid}',-1)">‹</button>
-            <div class="cal-nav-label" id="calLabel-${uid}"></div>
-            <button class="cal-nav-btn" onclick="shiftCalMonth('${uid}',1)">›</button>
-          </div>
-          <div class="cal-grid" id="calGrid-${uid}"></div>
-          <button class="secondary heatmap-toggle" onclick="const l=this.nextElementSibling;const o=l.style.display!=='none';l.style.display=o?'none':'block';this.innerText=o?'Show full task list (${ts.length})':'Hide full task list';">Show full task list (${ts.length})</button>
-          <div class="full-task-rows" style="display:none">${rows}</div>
-        </div>
+        <div class="task-list" style="display:${open?'block':'none'}">${rows}</div>
       </div>`;
     }).join('');
-
-    visible.forEach(n=>{
-      const ts=f.filter(t=>t.designer===n);if(!ts.length)return;
-      const uid=n.replace(/[^a-z0-9]/gi,'');
-      const dated=ts.map(t=>t.endDateValue||t.startDateValue).filter(Boolean).sort();
-      const latest=dated.length?new Date(dated[dated.length-1]+'T00:00:00'):new Date();
-      calState[uid]={tasks:ts,designer:n,year:latest.getFullYear(),month:latest.getMonth()};
-      renderCalendarInto(uid);
-    });
-
   }
 
   loadData();
