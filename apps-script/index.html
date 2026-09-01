@@ -51,7 +51,8 @@
   .accordion-body.open{display:block;}
   .section-subtitle{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.5;}
 
-  .reference-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+  .reference-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .reference-grid-secondary{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:24px;padding-top:24px;border-top:1px solid var(--border);}
   .ref-title{font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;}
   .ref-row{background:var(--inset);border-radius:8px;padding:9px 10px;margin-bottom:7px;display:flex;gap:10px;justify-content:space-between;align-items:center;}
   .ref-left{display:flex;gap:9px;align-items:flex-start;min-width:0;}
@@ -190,7 +191,7 @@
   .tab-panel{display:none;}.tab-panel.active{display:block;}
   @media(max-width:980px){
     h1{font-size:40px;}
-    .reference-grid{grid-template-columns:1fr;}
+    .reference-grid,.reference-grid-secondary{grid-template-columns:1fr;}
     .potential-grid{grid-template-columns:1fr;}
     #statusBody{overflow-x:auto;}
     #statusCharts{
@@ -305,19 +306,6 @@
             <div class="ref-row"><div class="ref-left"><span class="code c-terra">C2</span><div class="ref-main c-muted">Client Committed to Online Campaign</div></div><div class="ref-value c-terra">0.6</div></div>
           </div>
           <div>
-            <div class="ref-title c-gold">Lifecycle Flow</div>
-            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">1</span><div class="ref-main c-muted">Manager assigns → card opens</div></div></div>
-            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">2</span><div class="ref-main c-muted">Daily standup tracks progress</div></div></div>
-            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">3</span><div class="ref-main c-muted">Designer sends Slack follow-ups</div></div></div>
-            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">4</span><div class="ref-main c-muted">Terminal state → score locks</div></div></div>
-            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">5</span><div class="ref-main c-muted">Quarter end → OKR portfolio review</div></div></div>
-            <div class="ref-title c-gold" style="margin-top:22px;">Performance Tiers</div>
-            <div class="ref-row" style="border:1px solid var(--red);"><div class="ref-main c-red">Below Standard</div><div class="ref-value c-red">0–9 pts</div></div>
-            <div class="ref-row" style="border:1px solid var(--blue);"><div class="ref-main c-blue">Meeting Standard</div><div class="ref-value c-blue">9–18 pts</div></div>
-            <div class="ref-row" style="border:1px solid var(--green);"><div class="ref-main c-green">Exceeding</div><div class="ref-value c-green">18–28 pts</div></div>
-            <div class="ref-row" style="border:1px solid var(--gold);"><div class="ref-main c-gold">Outstanding</div><div class="ref-value c-gold">≥28 pts</div></div>
-          </div>
-          <div>
             <div class="ref-title c-purple">Difficulty Multiplier</div>
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D1</span><div class="ref-main c-muted">Static / Banner</div></div><div class="ref-value c-purple">×1</div></div>
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D2</span><div class="ref-main c-muted">Video</div></div><div class="ref-value c-purple">×1.1</div></div>
@@ -326,6 +314,23 @@
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D5</span><div class="ref-main c-muted">AI Stories</div></div><div class="ref-value c-purple">×1.5</div></div>
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D6</span><div class="ref-main c-muted">Branding</div></div><div class="ref-value c-purple">×1</div></div>
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D7</span><div class="ref-main c-muted">Other</div></div><div class="ref-value c-purple">×1</div></div>
+          </div>
+        </div>
+        <div class="reference-grid-secondary">
+          <div>
+            <div class="ref-title c-gold">Lifecycle Flow</div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">1</span><div class="ref-main c-muted">Manager assigns → card opens</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">2</span><div class="ref-main c-muted">Daily standup tracks progress</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">3</span><div class="ref-main c-muted">Designer sends Slack follow-ups</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">4</span><div class="ref-main c-muted">Terminal state → score locks</div></div></div>
+            <div class="ref-row"><div class="ref-left"><span class="ref-value c-gold">5</span><div class="ref-main c-muted">Quarter end → OKR portfolio review</div></div></div>
+          </div>
+          <div>
+            <div class="ref-title c-gold">Performance Tiers</div>
+            <div class="ref-row" style="border:1px solid var(--red);"><div class="ref-main c-red">Below Standard</div><div class="ref-value c-red">0–9 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--blue);"><div class="ref-main c-blue">Meeting Standard</div><div class="ref-value c-blue">9–18 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--green);"><div class="ref-main c-green">Exceeding</div><div class="ref-value c-green">18–28 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--gold);"><div class="ref-main c-gold">Outstanding</div><div class="ref-value c-gold">≥28 pts</div></div>
           </div>
         </div>
       </div>
