@@ -76,16 +76,24 @@ function importWithFormat() {
 
       const sourceRange = sourceSheet.getRange(1, 1, lastRow, lastCol);
       const sourceValues = sourceRange.getDisplayValues();
-      const targetValues = targetSheet.getRange(1, 1, lastRow, lastCol).getDisplayValues();
+      const sourceBackgrounds = sourceRange.getBackgrounds();
+      const targetRange = targetSheet.getRange(1, 1, lastRow, lastCol);
+      const targetValues = targetRange.getDisplayValues();
+      const targetBackgrounds = targetRange.getBackgrounds();
 
-      if (JSON.stringify(sourceValues) === JSON.stringify(targetValues)) {
+      // Compare both text and background color — a color-only edit (no
+      // text change) used to be missed here, since only sourceValues vs
+      // targetValues was checked, silently skipping the format copy below.
+      const valuesMatch = JSON.stringify(sourceValues) === JSON.stringify(targetValues);
+      const backgroundsMatch = JSON.stringify(sourceBackgrounds) === JSON.stringify(targetBackgrounds);
+
+      if (valuesMatch && backgroundsMatch) {
         Logger.log(`✅ ${source.sheet} 無變動，跳過`);
         return;
       }
 
-      const targetRange = targetSheet.getRange(1, 1, lastRow, lastCol);
       targetRange.setValues(sourceValues);
-      targetRange.setBackgrounds(sourceRange.getBackgrounds());
+      targetRange.setBackgrounds(sourceBackgrounds);
       targetRange.setFontColors(sourceRange.getFontColors());
       targetRange.setFontWeights(sourceRange.getFontWeights());
       targetRange.setFontSizes(sourceRange.getFontSizes());
