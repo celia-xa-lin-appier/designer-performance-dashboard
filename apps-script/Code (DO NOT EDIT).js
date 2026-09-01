@@ -10,35 +10,19 @@ const SOURCES = [
   },
   // --- 第 2 個表格 ---
   {
-    id:          "1nfSmY4GeRLuy3YmOXhjiJ1cnfNkXa9Q_LDXyj5mUd-E",
-    sheet:       "統計",
-    targetSheet: "Kathy's Summary",
-  },
-  // --- 第 3 個表格 ---
-  {
     id:          "1S6WO4uedwmJ2aGpGPVK906ab6x0YO0GoxSbGmGV9uyU",
     sheet:       "List",
     targetSheet: "Lin",
   },
-  // --- 第 4 個表格 ---
-  {
-    id:          "1S6WO4uedwmJ2aGpGPVK906ab6x0YO0GoxSbGmGV9uyU",
-    sheet:       "統計",
-    targetSheet: "Lin's Summary",
-  },
-  // --- 第 5 個表格 ---
+  // --- 第 3 個表格 ---
   {
     id:          "1ZqI-v3RNYPX8s648VAfQxDoDvKaRqWJcvQf1YSDCeRI",
     sheet:       "List",
     targetSheet: "Min",
   },
-  // --- 第 6 個表格 ---
-  {
-    id:          "1ZqI-v3RNYPX8s648VAfQxDoDvKaRqWJcvQf1YSDCeRI",
-    sheet:       "統計",
-    targetSheet: "Min's Summary",
-  },
-  
+  // 「統計」→「…'s Summary」這 3 筆同步已移除：三人的樞紐分析表已整合進
+  // Designer Calculator 自己的「Q3 Designer status」分頁，不再需要從各自
+  // 獨立表同步一份靜態快照過來。
 ];
 
 // ========================================
