@@ -272,7 +272,7 @@
             <button class="ovtab" onclick="ovView('time',this)">Over Time</button>
           </div>
           <div id="ovStatus"><div class="ov-legend" id="ovLegendS"></div><div id="overviewChart"></div>
-            <div class="ov-caption">Y-axis = cumulative score. Each cluster shows the score accumulated through that status code. A4–A8 and C1–C2 zones remain shaded.</div></div>
+            <div class="ov-caption">Y-axis = score earned from that status code alone (not cumulative). A4–A8 and C1–C2 zones remain shaded.</div></div>
           <div id="ovTime" style="display:none"><div class="ov-legend" id="ovLegendT"></div><div id="timelineChart"></div>
             <div class="ov-caption">Y-axis = cumulative score by End Date. Final points are labeled with each designer's current score.</div></div>
         </div>
@@ -750,21 +750,20 @@
       </div>`;
     }).join('');
 
-    // ---------- BY STATUS: cumulative score ----------
-    const cumulative={};
+    // ---------- BY STATUS: score earned per status code (not cumulative) ----------
+    const perStatus={};
     let maxScore=0;
 
     visible.forEach(name=>{
-      let running=0;
-      cumulative[name]={};
+      perStatus[name]={};
 
       OV_CODES.forEach(code=>{
-        running+=f
+        const value=f
           .filter(t=>t.designer===name&&t.statusCode===code)
           .reduce((sum,t)=>sum+Number(t.oScore||0),0);
 
-        cumulative[name][code]=running;
-        maxScore=Math.max(maxScore,running);
+        perStatus[name][code]=value;
+        maxScore=Math.max(maxScore,value);
       });
     });
 
@@ -796,7 +795,7 @@
       const brand=code[0]==='C';
 
       visible.forEach((name,j)=>{
-        const value=cumulative[name][code]||0;
+        const value=perStatus[name][code]||0;
         const offset=(j-(nb-1)/2)*(barW+gap);
         const bx=cx+offset-barW/2;
         const bh=(value/sc.max)*pH;
@@ -828,7 +827,7 @@
         showTip(
           `<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[bar.dataset.n]}"></span>${bar.dataset.n} · ${bar.dataset.c}</div>
            <div class="tip-sub">${STATUS_FULL[bar.dataset.c]||esc(bar.dataset.c)}</div>
-           <div>Cumulative score: ${Number(bar.dataset.v).toFixed(2)}</div>`,
+           <div>Score from ${bar.dataset.c}: ${Number(bar.dataset.v).toFixed(2)}</div>`,
           e
         );
       });
