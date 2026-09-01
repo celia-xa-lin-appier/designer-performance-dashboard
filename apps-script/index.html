@@ -51,11 +51,9 @@
   .accordion-body.open{display:block;}
   .section-subtitle{color:var(--muted);font-size:13px;margin-bottom:18px;line-height:1.5;}
 
-  .ref-section-label{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:14px;}
-  .reference-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
-  .reference-grid-weighting{display:grid;grid-template-columns:1fr 2fr;gap:24px;}
+  .reference-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
   .reference-grid-secondary{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:24px;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;}
-  .ref-formula-note{background:var(--card2);border:1px dashed var(--border2);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;justify-content:center;}
+  .ref-formula-note{background:var(--inset);border:1px dashed var(--border2);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;}
   .ref-formula-title{font-size:13px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);}
   .ref-formula-eq{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--ink);}
   .ref-formula-example{font-size:13px;color:var(--ink2);line-height:1.6;}
@@ -197,7 +195,7 @@
   .tab-panel{display:none;}.tab-panel.active{display:block;}
   @media(max-width:980px){
     h1{font-size:40px;}
-    .reference-grid,.reference-grid-weighting,.reference-grid-secondary{grid-template-columns:1fr;}
+    .reference-grid,.reference-grid-secondary{grid-template-columns:1fr;}
     .potential-grid{grid-template-columns:1fr;}
     #statusBody{overflow-x:auto;}
     #statusCharts{
@@ -291,7 +289,6 @@
     <div class="accordion">
       <div class="accordion-header" onclick="tog('refBody',this)"><span>📋 Scoring Framework Reference</span><span>▲</span></div>
       <div id="refBody" class="accordion-body open">
-        <div class="ref-section-label">Base Score — what the task earns</div>
         <div class="reference-grid">
           <div>
             <div class="ref-title c-blue">(A) UA — Outcome Score</div>
@@ -311,11 +308,13 @@
             <div class="ref-title c-terra" style="margin-top:22px;">Branding</div>
             <div class="ref-row"><div class="ref-left"><span class="code c-terra">C1</span><div class="ref-main c-muted">Pitch Creatives Delivered</div></div><div class="ref-value c-terra">0.4</div></div>
             <div class="ref-row"><div class="ref-left"><span class="code c-terra">C2</span><div class="ref-main c-muted">Client Committed to Online Campaign</div></div><div class="ref-value c-terra">0.6</div></div>
+            <div class="ref-formula-note" style="margin-top:22px;">
+              <div class="ref-formula-title">How A/B/C combine with D</div>
+              <div class="ref-formula-eq"><span class="c-blue">Base Score (A/B/C)</span> ×&nbsp;<span class="c-purple">Multiplier (D)</span><br>=&nbsp;Final Score</div>
+              <div class="ref-formula-example">Example: an <b class="c-green">A4 Approved</b> task (1.0 pt) made as a <b class="c-purple">Video</b> (×1.1) locks in at <b>1.1 pts</b>.</div>
+              <div class="ref-formula-example">A/B/C answer <i>"what happened to the task"</i> — D answers <i>"how hard was it to make."</i> The multiplier never changes the outcome, only what it's worth.</div>
+            </div>
           </div>
-        </div>
-
-        <div class="ref-section-label" style="margin-top:28px;">Weighting Multiplier — applied on top of the base score</div>
-        <div class="reference-grid-weighting">
           <div>
             <div class="ref-title c-purple">(D) Difficulty Multiplier</div>
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D1</span><div class="ref-main c-muted">Static / Banner</div></div><div class="ref-value c-purple">×1</div></div>
@@ -326,14 +325,7 @@
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D6</span><div class="ref-main c-muted">Branding</div></div><div class="ref-value c-purple">×1</div></div>
             <div class="ref-row"><div class="ref-left"><span class="code c-purple">D7</span><div class="ref-main c-muted">Other</div></div><div class="ref-value c-purple">×1</div></div>
           </div>
-          <div class="ref-formula-note">
-            <div class="ref-formula-title">How the two combine</div>
-            <div class="ref-formula-eq"><span class="c-blue">Base Score (A/B/C)</span> &nbsp;×&nbsp; <span class="c-purple">Weighting Multiplier (D)</span> &nbsp;=&nbsp; Final Score</div>
-            <div class="ref-formula-example">Example: an <b class="c-green">A4 Approved</b> task (1.0 pt) made as a <b class="c-purple">Video</b> (×1.1) locks in at <b>1.1 pts</b>.</div>
-            <div class="ref-formula-example">A/B/C answer <i>"what happened to the task"</i> — D answers <i>"how hard was it to make."</i> The multiplier never changes the task's outcome, only how much that outcome is worth.</div>
-          </div>
         </div>
-
       </div>
     </div>
     <div class="accordion">
