@@ -1,6 +1,15 @@
 const SPREADSHEET_ID = '1E144XQoWjzOpUMnDgZidejV4LOiUGZBT5hoPlp3nzko';
 const DESIGNERS = ['Kathy', 'Lin', 'Min'];
 
+// Reads straight from a designer's own spreadsheet instead of the synced
+// copy in Designer Calculator. Reading has never needed write access, so
+// this sidesteps a designer's tab being blocked by a protected range there
+// (e.g. Min's — see today's "protected cell" sync failures) without
+// touching Code (DO NOT EDIT).js's sync at all.
+const DESIGNER_SOURCE_OVERRIDE = {
+  Min: { spreadsheetId: '1ZqI-v3RNYPX8s648VAfQxDoDvKaRqWJcvQf1YSDCeRI', sheetName: 'List' }
+};
+
 // Dashboard data is refreshed at most once every 120 seconds.
 const CACHE_TTL_SECONDS = 120;
 const CACHE_KEY_PREFIX = 'designer_dashboard_v2';
@@ -91,7 +100,10 @@ function getDashboardData() {
   const tasks = [];
 
   DESIGNERS.forEach(designer => {
-    const sheet = ss.getSheetByName(designer);
+    const override = DESIGNER_SOURCE_OVERRIDE[designer];
+    const sheet = override
+      ? SpreadsheetApp.openById(override.spreadsheetId).getSheetByName(override.sheetName)
+      : ss.getSheetByName(designer);
     if (!sheet) return;
 
     const lastRow = sheet.getLastRow();
