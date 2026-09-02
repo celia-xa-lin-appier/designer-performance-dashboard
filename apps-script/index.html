@@ -11,15 +11,58 @@
     --ink:#2b2724; --ink2:#4a443b; --muted:#6f685c; --faint:#a89e8c;
     --blue:#2f6fb0; --green:#2f9e5f; --gold:#dd9a15;
     --purple:#7d54b8; --terra:#dd6a3a; --red:#cf4436; --teal:#1f9e94;
+
+    /* Person colors — fixed per person, colorblind-tested, used ONLY for people. */
+    --person-1:#2a78d6; --person-2:#eb6834; --person-3:#1baf7a;
+
+    /* Chart canvas — deliberately distinct from the page's cream chrome. */
+    --chart-bg:#ffffff; --chart-grid:#dfe2e6; --chart-axis:#8b93a1; --chart-line:#c7cbd1;
+
+    /* Status ramp: A-series = one hue, light(early)->dark(approved). B, C = separate hues. */
+    --status-a1:#e3d9f5; --status-a2:#cdb9ec; --status-a3:#b79ae3; --status-a4:#a17bda;
+    --status-a5:#8a5fd0; --status-a6:#7248bd; --status-a7:#5c37a0; --status-a8:#452883;
+    --status-b1:#bfe8d8; --status-b2:#1f9e70;
+    --status-c1:#f6d3b8; --status-c2:#dd8a3a;
+    --status-f:#b9463a;
+
+    /* Type ramp — separate hue family from person + status colors. */
+    --type-branding:#c14f8a; --type-video:#3d6b99; --type-ai:#2f8f7a;
+    --type-playable:#9a8a2e; --type-interactive:#8a5a3a; --type-static:#5f6b8a; --type-other:#8a8378;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#14171b; --card:#1c2027; --card2:#20242c; --inset:#262b33;
+      --border:#333a45; --border2:#40485530;
+      --ink:#e9ebee; --ink2:#c3c9d1; --muted:#8b93a1; --faint:#5c6472;
+      --blue:#5b9bdb; --green:#4fbf82; --gold:#e8b448;
+      --purple:#a688d6; --terra:#e8875f; --red:#e2695c; --teal:#3dbdb2;
+
+      --person-1:#3987e5; --person-2:#d95926; --person-3:#199e70;
+
+      --chart-bg:#171b21; --chart-grid:#2b313b; --chart-axis:#8a93a3; --chart-line:#3a414d;
+
+      /* Same intent (light=early, prominent=approved) reworked for a dark canvas:
+         early stages recede toward the background, approved stages come forward. */
+      --status-a1:#2a2a3a; --status-a2:#3a3350; --status-a3:#4a3d68; --status-a4:#5c4a80;
+      --status-a5:#715a9c; --status-a6:#8a71b8; --status-a7:#a68cd0; --status-a8:#c6aee6;
+      --status-b1:#1d3c30; --status-b2:#3ecf9a;
+      --status-c1:#3d2c1c; --status-c2:#e8a25e;
+      --status-f:#e2695c;
+
+      --type-branding:#e08fc0; --type-video:#7fabd6; --type-ai:#5fcfb4;
+      --type-playable:#d0c05a; --type-interactive:#c98f66; --type-static:#8f9bc2; --type-other:#a8a196;
+    }
   }
   *{box-sizing:border-box;margin:0;padding:0;}
+  @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}}
   body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;padding:32px 20px;}
   .container{max-width:1120px;margin:0 auto;}
   .eyebrow{color:var(--terra);font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;margin-bottom:10px;}
   h1{font-family:'Epilogue',sans-serif;font-size:56px;line-height:.95;font-weight:900;letter-spacing:-.04em;margin-bottom:14px;color:var(--ink);}
   .gradient{background:linear-gradient(90deg,var(--terra),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .subtitle{color:var(--muted);font-size:16px;line-height:1.6;margin-bottom:24px;}
-  .note{background:#fff6e2;border:1px dashed var(--gold);border-radius:12px;padding:12px 16px;color:#8a6410;font-size:13px;margin-bottom:24px;line-height:1.5;}
+  .note{background:var(--inset);border:1px dashed var(--gold);border-radius:12px;padding:12px 16px;color:var(--ink2);font-size:13px;margin-bottom:24px;line-height:1.5;}
+  .tabular{font-variant-numeric:tabular-nums;}
 
   .nav{position:sticky;top:0;z-index:20;display:flex;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:6px;margin-bottom:24px;box-shadow:0 2px 10px rgba(0,0,0,.03);}
   .navtab{flex:1;border:none;background:transparent;color:var(--muted);font-family:'Epilogue',sans-serif;font-weight:800;font-size:15px;padding:12px;border-radius:9px;cursor:pointer;min-height:auto;}
@@ -37,13 +80,15 @@
   .date-picker::after{content:"📅";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7;pointer-events:none;}
   .hint{color:var(--faint);font-size:12px;width:100%;margin-top:2px;}
 
-  .team-stats,.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:24px;}
-  .stat-card,.summary-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;}
+  .team-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:24px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;cursor:pointer;}
+  .stat-card:hover{border-color:var(--border2);}
   .stat-value{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:46px;line-height:1;}
-  .stat-label{color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:10px;}
-  .summary-card h3{font-size:16px;font-weight:800;margin-bottom:8px;color:var(--ink);}
-  .score{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:34px;color:var(--green);}
-  .task-count{color:var(--muted);font-size:13px;margin-top:4px;}
+  .stat-label{color:var(--muted);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:10px;display:flex;align-items:center;gap:6px;}
+  .stat-label .exp{font-size:10px;color:var(--faint);}
+  .stat-drill{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+  .stat-drill.open{display:block;}
+  .stat-drill-row{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:4px 0;color:var(--ink2);}
 
   .accordion{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:visible;}
   .accordion-header{padding:18px 22px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-family:'Epilogue',sans-serif;font-size:18px;font-weight:900;color:var(--ink);}
@@ -60,7 +105,7 @@
   .ref-title{font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;}
   .ref-row{background:var(--inset);border-radius:8px;padding:9px 10px;margin-bottom:7px;display:flex;gap:10px;justify-content:space-between;align-items:center;}
   .ref-left{display:flex;gap:9px;align-items:flex-start;min-width:0;}
-  .code{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:2px 7px;border-radius:5px;border:1px solid currentColor;background:#fff;flex-shrink:0;}
+  .code{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;padding:2px 7px;border-radius:5px;border:1px solid currentColor;background:var(--card);flex-shrink:0;}
   .ref-main{font-size:14px;font-weight:800;}
   .ref-sub{font-size:12px;color:var(--faint);margin-top:2px;}
   .ref-value{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:800;flex-shrink:0;}
@@ -72,98 +117,80 @@
   .highlight{color:var(--green);font-weight:800;}
 
   .chart-grid{display:grid;grid-template-columns:1fr;gap:18px;}
-
-  /* Status Distribution: keep Kathy / Lin / Min side by side */
-  #statusCharts{
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:12px;
-    align-items:start;
-  }
-  #statusCharts .chart-block{
-    min-width:0;
-    padding:15px;
-  }
-  #statusCharts .chart-name{
-    align-items:flex-start;
-    gap:8px;
-  }
-  #statusCharts .chart-head-right{
-    gap:6px;
-  }
-  #statusCharts .srow{
-    grid-template-columns:minmax(82px,112px) minmax(50px,1fr) 26px;
-    gap:7px;
-    padding:5px 6px;
-  }
-  #statusCharts .slabel{
-    gap:4px;
-    min-width:0;
-  }
-  #statusCharts .slabel .full{
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
-  #statusCharts .approved-badge{
-    padding:4px 7px;
-    font-size:10px;
-  }
-  #statusCharts .approved-badge b{
-    font-size:12px;
-  }
-  #statusCharts .chart-total{
-    font-size:10px;
-  }
   .chart-block{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;}
   .chart-name{font-weight:900;margin-bottom:14px;display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--ink);}
   .chart-head-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end;}
-  .approved-badge{display:inline-flex;align-items:center;gap:6px;background:#e9f5ee;border:1px solid #b9dcc7;color:#247b49;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;white-space:nowrap;}
+  .approved-badge{display:inline-flex;align-items:center;gap:6px;background:var(--inset);border:1px solid var(--border2);color:var(--green);border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;white-space:nowrap;}
   .approved-badge b{font-family:'JetBrains Mono',monospace;font-size:13px;}
   .chart-total{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);font-weight:800;}
-  .stack{display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--border2);}
-  .seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:800;color:#fff;cursor:default;transition:filter .15s;white-space:nowrap;}
-  .seg:hover{filter:brightness(1.09);}
   .empty-mini{color:var(--faint);font-size:13px;padding:6px 0;}
-  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
   .legend-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);font-weight:600;}
   .swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
 
-  .srow{display:grid;grid-template-columns:minmax(150px,190px) 1fr 40px;gap:10px;align-items:center;margin-bottom:8px;padding:5px 8px;border-radius:8px;cursor:default;transition:background .13s;}
-  .srow:hover{background:#fff;}
-  .srow.win{background:#fdf6e6;}
-  .srow.win:hover{background:#fbefd2;}
+  /* Small-multiples bar rows (Type Distribution, A2 stagnation panel) */
+  .hbar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start;}
+  @media(max-width:980px){.hbar-grid{grid-template-columns:1fr;}}
+  .hbar-row{display:grid;grid-template-columns:minmax(90px,120px) 1fr 34px;gap:8px;align-items:center;margin-bottom:6px;padding:3px 0;}
+  .hbar-label{font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hbar-track{height:12px;background:var(--inset);border-radius:999px;overflow:hidden;position:relative;}
+  .hbar-fill{height:100%;border-radius:999px;}
+  .hbar-count{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink);text-align:right;font-weight:800;}
+
+  .srow{display:grid;grid-template-columns:minmax(150px,190px) 1fr 40px;gap:10px;align-items:center;margin-bottom:8px;padding:5px 8px;border-radius:8px;cursor:pointer;transition:background .13s;}
+  .srow:hover{background:var(--card);}
   .slabel{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--ink2);display:flex;align-items:center;gap:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .slabel .full{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--muted);font-size:11px;}
-  .win-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;}
-  .sbar{height:11px;background:#ece4d2;border-radius:999px;overflow:hidden;}
-  .sfill{height:100%;background:var(--blue);border-radius:999px;}
-  .sfill.win{background:var(--green);}
+  .sbar{height:11px;background:var(--inset);border-radius:999px;overflow:hidden;}
+  .sfill{height:100%;border-radius:999px;}
   .scount{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink);text-align:right;font-weight:800;}
+  .srow-detail{display:none;grid-column:1/-1;margin-top:6px;padding:10px 12px;background:var(--inset);border-radius:8px;font-size:12px;color:var(--ink2);}
+  .srow-detail.open{display:block;}
+  .srow-detail-task{padding:3px 0;display:flex;justify-content:space-between;gap:10px;}
 
   .overview-block{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:18px;}
-  .approved-line{background:#e9f5ee;border:1px solid #b9dcc7;color:#247b49;border-radius:10px;padding:10px 13px;margin-bottom:14px;font-size:13px;font-weight:700;line-height:1.55;}
-  .approved-line b{font-family:'JetBrains Mono',monospace;font-size:14px;}
-  .potential-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px;}
-  .potential-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:0;}
-  .potential-name{font-size:15px;font-weight:900;margin-bottom:7px;}
-  .potential-main{font-size:12px;line-height:1.65;color:var(--ink2);}
-  .potential-main b{font-family:'JetBrains Mono',monospace;color:var(--green);}
-  .potential-main .warning{color:var(--terra);font-weight:800;}
-  .potential-sub{font-size:11px;line-height:1.5;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
-  .potential-note{font-size:11px;color:var(--faint);line-height:1.55;margin:-2px 0 16px;}
-  .final-score-label{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;}
   .ov-toggle{display:flex;gap:6px;background:var(--inset);border:1px solid var(--border);border-radius:999px;padding:4px;width:fit-content;margin-bottom:16px;}
   .ovtab{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:7px 16px;border-radius:999px;cursor:pointer;min-height:auto;}
   .ovtab.active{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.06);}
   .ov-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:8px;}
   svg text{font-family:'DM Sans',sans-serif;}
-  .bar-r{transition:filter .12s;}.bar-r:hover{filter:brightness(1.12);}
-  .tl-dot{cursor:default;}
+  .bar-r{transition:filter .12s;cursor:pointer;}.bar-r:hover{filter:brightness(1.12);}
+  .tl-dot{cursor:pointer;}
   .ov-caption{color:var(--faint);font-size:12px;margin-top:10px;line-height:1.5;}
+  .chart-canvas{background:var(--chart-bg);border:1px solid var(--border);border-radius:10px;padding:10px;}
+  .data-table-toggle{margin-top:10px;font-size:12px;padding:6px 12px;min-height:auto;}
+  .data-table{display:none;margin-top:10px;width:100%;border-collapse:collapse;font-size:12px;}
+  .data-table.open{display:table;}
+  .data-table th{text-align:left;color:var(--muted);font-weight:700;padding:5px 8px;border-bottom:1px solid var(--border2);white-space:nowrap;}
+  .data-table td{padding:5px 8px;border-bottom:1px solid var(--border);color:var(--ink2);}
+  .data-table td.num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);}
+
+  /* A1 — Score x Tier threshold bars */
+  .tier-legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 14px;font-size:11.5px;color:var(--muted);}
+  .tier-legend span{display:inline-flex;align-items:center;gap:5px;}
+  .tier-swatch{width:10px;height:10px;border-radius:2px;}
+  .tier-row{cursor:pointer;}
+  .tier-row-detail{display:none;margin-top:6px;padding:10px 12px;background:var(--inset);border-radius:8px;font-size:12.5px;color:var(--ink2);}
+  .tier-row-detail.open{display:block;}
+
+  /* A2 — output vs score scatter */
+  .scatter-caption{font-size:12px;color:var(--faint);margin-top:8px;line-height:1.5;}
+
+  /* A3 — A2 stagnation panel */
+  .stagnation-summary{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+  .stagnation-summary .num{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:22px;color:var(--ink);}
+  .stagnation-summary .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+  .stagnation-note{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.5;}
+  .stagnation-detail{display:none;margin-top:8px;padding:10px 12px;background:var(--inset);border-radius:8px;font-size:12px;}
+  .stagnation-detail.open{display:block;}
+  .stagnation-detail-row{display:grid;grid-template-columns:1fr 100px 90px 90px;gap:8px;padding:4px 0;color:var(--ink2);}
+  .stagnation-detail-row.head{font-weight:800;color:var(--muted);font-size:10.5px;text-transform:uppercase;border-bottom:1px solid var(--border2);padding-bottom:5px;margin-bottom:3px;}
+
+  .sparkline-wrap{margin-top:10px;}
 
   .designer-section{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:14px;overflow:hidden;}
   .designer-header{padding:18px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;}
-  .avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--terra),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;flex-shrink:0;}
+  .avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;flex-shrink:0;}
   .designer-info{flex:1;min-width:0;}
   .designer-name{font-size:17px;font-weight:900;color:var(--ink);}
   .designer-meta{font-size:13px;margin-top:4px;color:var(--muted);word-break:break-word;}
@@ -171,43 +198,34 @@
   .designer-total .num{font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--green);font-weight:800;}
   .designer-total .text{color:var(--muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase;}
   .bar{height:3px;background:var(--border);}
-  .bar-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--blue));}
+  .bar-fill{height:100%;}
   .task-list{padding:16px 20px 20px;border-top:1px solid var(--border);}
   .task-row{display:flex;align-items:flex-start;gap:12px;background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:6px;}
-  .task-date{flex-shrink:0;width:52px;padding-top:1px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);}
+  .task-date{flex-shrink:0;width:52px;padding-top:1px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;}
   .task-name{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink);line-height:1.4;}
   .pill-formula{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--ink2);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;white-space:nowrap;}
   .pill-formula b{color:var(--terra);font-weight:800;}
-  .pill-formula.win{color:var(--green);background:#e7f2ec;border-color:#b6d8c4;}
+  .pill-formula.win{color:var(--green);background:var(--inset);border-color:var(--border2);}
   .pill-formula.win b{color:var(--green);}
+  .unclassified{color:var(--red);font-style:italic;}
   .empty{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;color:var(--muted);}
 
-  #tip{position:fixed;pointer-events:none;z-index:99;background:var(--ink);color:#f6f2ea;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:320px;opacity:0;transition:opacity .12s;}
+  #tip{position:fixed;pointer-events:none;z-index:99;background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:320px;opacity:0;transition:opacity .12s;}
   #tip .tip-head{font-weight:800;display:flex;align-items:center;gap:7px;margin-bottom:5px;}
   #tip .tip-sw{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
-  #tip .tip-sub{color:#c9bfa8;font-size:11px;margin-bottom:5px;}
-  #tip .tip-task{color:#ece4d2;padding-top:4px;margin-top:4px;border-top:1px solid #4a443b;}
+  #tip .tip-sub{opacity:.7;font-size:11px;margin-bottom:5px;}
+  #tip .tip-task{opacity:.9;padding-top:4px;margin-top:4px;border-top:1px solid rgba(128,128,128,.4);}
   #tip .tip-task:first-of-type{border-top:none;margin-top:0;padding-top:0;}
-  .win-tag{display:inline-block;background:#fff6e2;border:1px solid var(--gold);color:#8a6410;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;margin-left:8px;}
-  .lead-badge{margin-left:0;margin-right:6px;}
 
   .tab-panel{display:none;}.tab-panel.active{display:block;}
   @media(max-width:980px){
     h1{font-size:40px;}
     .reference-grid,.reference-grid-secondary{grid-template-columns:1fr;}
-    .potential-grid{grid-template-columns:1fr;}
     #statusBody{overflow-x:auto;}
-    #statusCharts{
-      grid-template-columns:repeat(3,minmax(300px,1fr));
-      min-width:930px;
-    }
+    #statusCharts{grid-template-columns:repeat(3,minmax(300px,1fr));min-width:930px;}
   }
-
   @media(max-width:620px){
-    #statusCharts{
-      grid-template-columns:repeat(3,minmax(280px,1fr));
-      min-width:870px;
-    }
+    #statusCharts{grid-template-columns:repeat(3,minmax(280px,1fr));min-width:870px;}
   }
 </style>
 </head>
@@ -237,26 +255,65 @@
     </div>
 
     <div class="team-stats">
-      <div class="stat-card"><div class="stat-value" id="teamScore" style="color:var(--blue)">0.0</div><div class="stat-label">Team Score</div></div>
-      <div class="stat-card"><div class="stat-value" id="avgScore" style="color:var(--green)">0.0</div><div class="stat-label">Avg Score</div></div>
-      <div class="stat-card"><div class="stat-value" id="totalTasks" style="color:var(--muted)">0</div><div class="stat-label">Total Tasks</div></div>
-      <div class="stat-card"><div class="stat-value" id="f2f" style="color:var(--gold)">0</div><div class="stat-label">F2F Flagged</div></div>
+      <div class="stat-card" onclick="toggleDrill('drillTeam')"><div class="stat-value tabular" id="teamScore" style="color:var(--blue)">0.0</div><div class="stat-label">Team Score <span class="exp">▾ tap for breakdown</span></div>
+        <div class="stat-drill" id="drillTeam"></div>
+      </div>
+      <div class="stat-card" onclick="toggleDrill('drillAvg')"><div class="stat-value tabular" id="avgScore" style="color:var(--green)">0.0</div><div class="stat-label">Avg Score <span class="exp">▾ tap for breakdown</span></div>
+        <div class="stat-drill" id="drillAvg"></div>
+      </div>
+      <div class="stat-card" onclick="toggleDrill('drillTasks')"><div class="stat-value tabular" id="totalTasks" style="color:var(--muted)">0</div><div class="stat-label">Total Tasks <span class="exp">▾ tap for breakdown</span></div>
+        <div class="stat-drill" id="drillTasks"></div>
+      </div>
+      <div class="stat-card" onclick="toggleDrill('drillF2f')"><div class="stat-value tabular" id="f2f" style="color:var(--gold)">0</div><div class="stat-label">F2F Flagged <span class="exp">▾ tap for who</span></div>
+        <div class="stat-drill" id="drillF2f"></div>
+      </div>
     </div>
 
-    <div class="summary" id="summary"></div>
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('tierBody',this)"><span>🎯 Score × Tier Threshold</span><span>▲</span></div>
+      <div id="tierBody" class="accordion-body open">
+        <div class="section-subtitle">Every designer's total score against the same tier ladder. A thin marker near a line is a fragile position — either close to the next tier, or barely past the last one.</div>
+        <div class="chart-canvas"><div id="tierChart"></div></div>
+        <button class="secondary data-table-toggle" onclick="toggleTable('tierTable',this)">Show data table</button>
+        <table class="data-table" id="tierTable"></table>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('scatterBody',this)"><span>⚖️ Output vs. Score</span><span>▲</span></div>
+      <div id="scatterBody" class="accordion-body open">
+        <div class="section-subtitle">Task count (x) against quarter total score (y). Above a line = better average score per task than that line's rate; below = more tasks but each worth less.</div>
+        <div class="chart-canvas"><div id="scatterChart"></div></div>
+        <div class="scatter-caption">Points above a rate line score better per task than that rate. This chart does not reward doing more rows by itself — see Creative Count Rules.</div>
+        <button class="secondary data-table-toggle" onclick="toggleTable('scatterTable',this)">Show data table</button>
+        <table class="data-table" id="scatterTable"></table>
+      </div>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-header" onclick="tog('stagnationBody',this)"><span>⏸️ A2 Stagnation — Where Follow-up Would Help</span><span>▲</span></div>
+      <div id="stagnationBody" class="accordion-body open">
+        <div class="section-subtitle">Share of each designer's work still sitting at A2 (produced, delivered, no follow-up). Click a row to see exactly which tasks — some A2 work (tooling, spec docs) has no client-approval path at all, so this is a prompt to check, not a verdict.</div>
+        <div class="stagnation-summary" id="stagnationSummary"></div>
+        <div id="stagnationChart"></div>
+        <div class="stagnation-note" id="stagnationNote"></div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:24px;"></div>
 
     <div class="accordion">
       <div class="accordion-header" onclick="tog('typeBody',this)"><span>📈 Type Distribution</span><span>▲</span></div>
       <div id="typeBody" class="accordion-body open">
-        <div class="section-subtitle">One 100% stacked bar per designer using the seven confirmed Column B categories. Blank Column B cells are excluded from totals and percentages. Hover a segment for details.</div>
-        <div id="typeCharts" class="chart-grid"></div>
+        <div class="section-subtitle">One row per creative type, per designer. All three share the same count axis — bar length is directly comparable across people. Blank Column B cells are shown as "Unclassified", not silently dropped.</div>
+        <div id="typeCharts" class="hbar-grid"></div>
       </div>
     </div>
 
     <div class="accordion">
       <div class="accordion-header" onclick="tog('statusBody',this)"><span>📊 Status Distribution</span><span>▲</span></div>
       <div id="statusBody" class="accordion-body open">
-        <div class="section-subtitle">One chart per designer, all codes. “A Approve Rate” = A4–A8 tasks ÷ A2–A8 tasks. Hover a row to see its task names and score total.</div>
+        <div class="section-subtitle">One chart per designer, all codes, sharing one scale across all three. Colors run light→dark through the A lifecycle; B and C use their own hues. Click a row for its task list.</div>
         <div id="statusCharts" class="chart-grid"></div>
       </div>
     </div>
@@ -265,15 +322,15 @@
       <div class="accordion-header" onclick="tog('overviewBody',this)"><span>🏁 Team Overview — 3-Designer Comparison</span><span>▲</span></div>
       <div id="overviewBody" class="accordion-body open">
         <div class="overview-block">
-          <div id="potentialOverview" class="potential-grid"></div>
-          <div class="potential-note">Potential assumes each A2/A3 task can move to the minimum Approved status A4. Estimated gain uses the task's actual multiplier and status score.</div>
+          <div id="potentialOverview" class="hbar-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));"></div>
+          <div class="scatter-caption">Potential assumes each A2/A3 task can move to the minimum Approved status A4. Estimated gain uses the task's actual multiplier and status score.</div>
           <div class="ov-toggle">
             <button class="ovtab active" onclick="ovView('status',this)">By Status</button>
             <button class="ovtab" onclick="ovView('time',this)">Over Time</button>
           </div>
-          <div id="ovStatus"><div class="ov-legend" id="ovLegendS"></div><div id="overviewChart"></div>
+          <div id="ovStatus"><div class="ov-legend" id="ovLegendS"></div><div class="chart-canvas"><div id="overviewChart"></div></div>
             <div class="ov-caption">Y-axis = score earned from that status code alone (not cumulative). A4–A8 and C1–C2 zones remain shaded.</div></div>
-          <div id="ovTime" style="display:none"><div class="ov-legend" id="ovLegendT"></div><div id="timelineChart"></div>
+          <div id="ovTime" style="display:none"><div class="ov-legend" id="ovLegendT"></div><div class="chart-canvas"><div id="timelineChart"></div></div>
             <div class="ov-caption">Y-axis = cumulative score by End Date. Final points are labeled with each designer's current score.</div></div>
         </div>
       </div>
@@ -341,9 +398,9 @@
           </div>
           <div>
             <div class="ref-title c-gold">Performance Tiers</div>
-            <div class="ref-row" style="border:1px solid var(--red);"><div class="ref-main c-red">Below Standard</div><div class="ref-value c-red">0–9 pts</div></div>
-            <div class="ref-row" style="border:1px solid var(--blue);"><div class="ref-main c-blue">Meeting Standard</div><div class="ref-value c-blue">9–18 pts</div></div>
-            <div class="ref-row" style="border:1px solid var(--green);"><div class="ref-main c-green">Exceeding</div><div class="ref-value c-green">18–28 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--red);"><div class="ref-main c-red">Below Standard</div><div class="ref-value c-red">0–8.99 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--blue);"><div class="ref-main c-blue">Meeting Standard</div><div class="ref-value c-blue">9–17.99 pts</div></div>
+            <div class="ref-row" style="border:1px solid var(--green);"><div class="ref-main c-green">Exceeding</div><div class="ref-value c-green">18–27.99 pts</div></div>
             <div class="ref-row" style="border:1px solid var(--gold);"><div class="ref-main c-gold">Outstanding</div><div class="ref-value c-gold">≥28 pts</div></div>
           </div>
         </div>
@@ -369,24 +426,31 @@
 
 <script>
   const TYPE_ORDER=['Branding','Video','AI stories','Playable','Interactive/Multi','Static/Banner','other'];
-  const TYPE_COLORS={
-    'Branding':'#1f9e94',
-    'Video':'#dd6a3a',
-    'AI stories':'#2f6fb0',
-    'Playable':'#dd9a15',
-    'Interactive/Multi':'#7d54b8',
-    'Static/Banner':'#2f9e5f',
-    'other':'#b0a692'
+  const TYPE_COLOR_VARS={
+    'Branding':'--type-branding','Video':'--type-video','AI stories':'--type-ai',
+    'Playable':'--type-playable','Interactive/Multi':'--type-interactive',
+    'Static/Banner':'--type-static','other':'--type-other'
   };
   const STATUS_ORDER=['A1','A2','A3','A4','A5','A6','A7','A8','B1','B2','C1','C2','F'];
+  const STATUS_COLOR_VARS={
+    A1:'--status-a1',A2:'--status-a2',A3:'--status-a3',A4:'--status-a4',
+    A5:'--status-a5',A6:'--status-a6',A7:'--status-a7',A8:'--status-a8',
+    B1:'--status-b1',B2:'--status-b2',C1:'--status-c1',C2:'--status-c2',F:'--status-f'
+  };
   const OV_CODES=['A2','A3','A4','A5','A6','A7','A8','B1','B2','C1','C2'];
   const WINS=['A4','A5','A6','A7','A8'];
   const STATUS_FULL={A1:'In Progress',A2:'Produced, Delivered & Slacked AM/BD',A3:'Rejected after follow-up',A4:'Approved (share < 10%)',A5:'Approved + share > 10%',A6:'Approved + share > 25%',A7:'Approved + share > 50%',A8:'Approved + share > 70%',B1:'Discovery Delivered',B2:'Added to AA Pipeline',C1:'Pitch Creatives Delivered',C2:'Client Committed to Online Campaign',F:'Fail'};
   const DESIGNERS=['Kathy','Lin','Min'];
-  const DCOLORS={Kathy:'#2f6fb0',Lin:'#2f9e5f',Min:'#dd9a15'};
+  // Color follows the person, fixed by slot — never reassigned by rank/filter.
+  const DCOLORS={Kathy:'var(--person-1)',Lin:'var(--person-2)',Min:'var(--person-3)'};
 
   let TASKS=[];
   let dashboardData={designers:DESIGNERS,tasks:[]};
+
+  function cssVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+  function typeColor(type){return `var(${TYPE_COLOR_VARS[type]||'--type-other'})`;}
+  function statusColor(code){return `var(${STATUS_COLOR_VARS[code]||'--muted'})`;}
+  function displayType(type){return type?type:'Unclassified';}
 
   function formatQuarter(value){
     const q=String(value||'').trim();
@@ -422,6 +486,7 @@
       ...t,
       designer:String(t.designer||'').trim(),
       task:String(t.task||''),
+      am:String(t.am||''),
       type:String(t.type||''),
       status:String(t.status||''),
       statusCode:String(t.statusCode||extractStatusCode(t.status)),
@@ -460,16 +525,11 @@
 
   function loadData(){
     document.getElementById('loadError').style.display='none';
-
-    // Show the last-known numbers instantly while a fresh fetch runs in the background.
     try{
       const cached=localStorage.getItem(DASHBOARD_CACHE_KEY);
       if(cached)applyDashboardData(JSON.parse(cached));
     }catch(e){/* no usable cache — normal first-load path handles this */}
 
-    // fetch() to this page's own URL skips the google.script.run RPC bridge
-    // and is faster when it works; falls back automatically if this page's
-    // sandbox isn't actually same-origin with its own exec URL.
     const dataUrl=location.href.split('#')[0].split('?')[0]+'?mode=data';
     fetch(dataUrl,{cache:'no-store'})
       .then(res=>{if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();})
@@ -477,7 +537,6 @@
       .catch(loadViaScriptRun);
   }
 
-  // tooltip
   function extractStatusCode(status){
     if(!status)return 'No Status';
     const text=String(status).trim();
@@ -490,26 +549,13 @@
   function normalizeType(type){
     const text=String(type||'').trim();
     if(!text)return '';
-
     const key=text.toLowerCase().replace(/\s+/g,' ');
     const mapping={
-      'branding':'Branding',
-      'video':'Video',
-      'ai stories':'AI stories',
-      'ai story':'AI stories',
-      'playable':'Playable',
-      'interactive/multi':'Interactive/Multi',
-      'interactive / multi':'Interactive/Multi',
-      'static/banner':'Static/Banner',
-      'static / banner':'Static/Banner',
-      'other':'other'
+      'branding':'Branding','video':'Video','ai stories':'AI stories','ai story':'AI stories',
+      'playable':'Playable','interactive/multi':'Interactive/Multi','interactive / multi':'Interactive/Multi',
+      'static/banner':'Static/Banner','static / banner':'Static/Banner','other':'other'
     };
-
     return mapping[key]||'';
-  }
-
-  function getApprovedTotal(tasks,designer){
-    return tasks.filter(t=>t.designer===designer&&WINS.includes(t.statusCode)).length;
   }
 
   function getApproveRate(tasks,designer){
@@ -517,63 +563,39 @@
     const denominatorCodes=['A2','A3','A4','A5','A6','A7','A8'];
     const approved=designerTasks.filter(t=>WINS.includes(t.statusCode)).length;
     const denominator=designerTasks.filter(t=>denominatorCodes.includes(t.statusCode)).length;
-    return {
-      approved,
-      denominator,
-      percent:denominator?(approved/denominator)*100:0
-    };
+    return {approved,denominator,percent:denominator?(approved/denominator)*100:0};
   }
 
-  const PERFORMANCE_TIERS=[
-    {name:'Below Standard',min:0,next:9},
-    {name:'Meeting Standard',min:9,next:18},
-    {name:'Exceeding',min:18,next:28},
-    {name:'Outstanding',min:28,next:Infinity}
-  ];
-
+  // Tier boundaries fixed so 9/18/28 don't double-count (bug from the old spec text).
   function getTierInfo(score){
-    if(score>=28)return {name:'Outstanding',nextName:'Highest tier',nextScore:Infinity,gap:0};
-    if(score>=18)return {name:'Exceeding',nextName:'Outstanding',nextScore:28,gap:28-score};
-    if(score>=9)return {name:'Meeting Standard',nextName:'Exceeding',nextScore:18,gap:18-score};
-    return {name:'Below Standard',nextName:'Meeting Standard',nextScore:9,gap:9-score};
+    if(score>=28)return {name:'Outstanding',nextName:'Highest tier',nextScore:Infinity,gap:0,min:28,max:Infinity};
+    if(score>=18)return {name:'Exceeding',nextName:'Outstanding',nextScore:28,gap:28-score,min:18,max:28};
+    if(score>=9)return {name:'Meeting Standard',nextName:'Exceeding',nextScore:18,gap:18-score,min:9,max:18};
+    return {name:'Below Standard',nextName:'Meeting Standard',nextScore:9,gap:9-score,min:0,max:9};
   }
 
   function getPotentialInfo(tasks,designer){
     const designerTasks=tasks.filter(t=>t.designer===designer);
     const score=designerTasks.reduce((sum,t)=>sum+Number(t.oScore||0),0);
     const tier=getTierInfo(score);
-
     const candidates=designerTasks
       .filter(t=>['A2','A3'].includes(t.statusCode))
       .map(t=>{
         const m=Number(t.mScore||0);
-        const currentN=Number(t.nScore||0);
-        const currentO=Number(t.oScore||0);
         const projectedA4=m*1;
-        const gain=Math.max(0,projectedA4-currentO);
+        const gain=Math.max(0,projectedA4-Number(t.oScore||0));
         return {...t,gain};
       })
       .sort((a,b)=>b.gain-a.gain);
-
     const totalPotential=candidates.reduce((sum,t)=>sum+t.gain,0);
-    let running=0;
-    let neededTasks=0;
-
+    let running=0,neededTasks=0;
     if(tier.gap>0){
       for(const task of candidates){
         if(running>=tier.gap)break;
-        running+=task.gain;
-        neededTasks++;
+        running+=task.gain;neededTasks++;
       }
     }
-
-    return {
-      score,
-      tier,
-      candidates,
-      totalPotential,
-      neededTasks:tier.gap===0?0:(running>=tier.gap?neededTasks:null)
-    };
+    return {score,tier,candidates,totalPotential,neededTasks:tier.gap===0?0:(running>=tier.gap?neededTasks:null)};
   }
 
   const tip=document.getElementById('tip');
@@ -582,6 +604,8 @@
   function hideTip(){tip.style.opacity=0;}
   function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function tog(id,h){const b=document.getElementById(id);b.classList.toggle('open');h.querySelector('span:last-child').innerText=b.classList.contains('open')?'▲':'▼';}
+  function toggleDrill(id){document.getElementById(id).classList.toggle('open');}
+  function toggleTable(id,btn){const t=document.getElementById(id);const open=t.classList.toggle('open');btn.innerText=open?'Hide data table':'Show data table';}
   function showTab(name,btn){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');document.querySelectorAll('.navtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});}
   function ovView(v,btn){document.getElementById('ovStatus').style.display=v==='status'?'block':'none';document.getElementById('ovTime').style.display=v==='time'?'block':'none';document.querySelectorAll('.ovtab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
   function openDatePicker(id){const i=document.getElementById(id);if(i.showPicker)i.showPicker();else{i.focus();i.click();}}
@@ -604,8 +628,12 @@
       return true;
     });
     const filtered=base.filter(t=>dz==='All'||t.designer===dz);
+    // Visible designers always list in fixed slot order — colors and rows never reshuffle by score.
     const visible=dz==='All'?DESIGNERS:[dz];
     renderStats(filtered);
+    renderTierChart(filtered,visible);
+    renderScatterChart(filtered,visible);
+    renderStagnationPanel(filtered,visible);
     renderSummary(filtered,visible);
     renderType(filtered,visible);
     renderStatus(filtered,visible);
@@ -615,90 +643,296 @@
   }
   function syncLabels(){document.getElementById('startDateLabel').innerText=document.getElementById('startDate').value||'Start Date';document.getElementById('endDateLabel').innerText=document.getElementById('endDate').value||'End Date';}
 
-  // ---------- RENDER ----------
+  // ---------- TOP STATS + DRILL-DOWNS ----------
   function renderStats(f){
     const total=f.reduce((a,t)=>a+t.oScore,0);
     const scored=f.filter(t=>t.oScore>0);
     document.getElementById('teamScore').innerText=total.toFixed(1);
     document.getElementById('avgScore').innerText=(scored.length?total/scored.length:0).toFixed(2);
     document.getElementById('totalTasks').innerText=f.length;
-    const g={};f.forEach(t=>{if(String(t.status).toLowerCase().includes('slacked')){g[t.designer]=(g[t.designer]||0)+1;}});
-    document.getElementById('f2f').innerText=Object.values(g).filter(c=>c>=3).length;
+
+    const slackedByDesigner={};
+    f.forEach(t=>{if(String(t.status).toLowerCase().includes('slacked')){(slackedByDesigner[t.designer]=slackedByDesigner[t.designer]||[]).push(t);}});
+    const flagged=Object.entries(slackedByDesigner).filter(([,ts])=>ts.length>=3);
+    document.getElementById('f2f').innerText=flagged.length;
+
+    document.getElementById('drillTeam').innerHTML=DESIGNERS.map(n=>{
+      const tot=f.filter(t=>t.designer===n).reduce((a,t)=>a+t.oScore,0);
+      return `<div class="stat-drill-row"><span>${n}</span><b class="tabular">${tot.toFixed(2)}</b></div>`;
+    }).join('');
+    document.getElementById('drillAvg').innerHTML=DESIGNERS.map(n=>{
+      const ts=f.filter(t=>t.designer===n);const sc=ts.filter(t=>t.oScore>0);
+      const tot=ts.reduce((a,t)=>a+t.oScore,0);
+      return `<div class="stat-drill-row"><span>${n}</span><b class="tabular">${(sc.length?tot/sc.length:0).toFixed(2)}</b></div>`;
+    }).join('');
+    document.getElementById('drillTasks').innerHTML=DESIGNERS.map(n=>{
+      const c=f.filter(t=>t.designer===n).length;
+      return `<div class="stat-drill-row"><span>${n}</span><b class="tabular">${c}</b></div>`;
+    }).join('');
+    document.getElementById('drillF2f').innerHTML=flagged.length
+      ? flagged.map(([n,ts])=>`<div class="stat-drill-row"><span>${n} — ${ts.length} slacked tasks</span></div>${ts.map(t=>`<div class="stat-drill-row" style="padding-left:12px;color:var(--faint)"><span>${esc(t.task)}</span></div>`).join('')}`).join('')
+      : `<div class="stat-drill-row"><span>No one currently has 3+ tasks flagged.</span></div>`;
   }
+
   function renderSummary(f,visible){
     document.getElementById('summary').innerHTML=visible.map(n=>{
       const ts=f.filter(t=>t.designer===n);
       const scored=ts.filter(t=>t.oScore>0);
       const tot=ts.reduce((a,t)=>a+t.oScore,0);
-      return `<div class="summary-card"><h3>${n}</h3><div class="score">${tot.toFixed(2)}</div><div class="task-count">${ts.length} tasks · Avg ${(scored.length?tot/scored.length:0).toFixed(2)}</div></div>`;
+      const spark=buildSparkline(ts,DCOLORS[n]);
+      return `<div class="summary-card" style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span class="swatch" style="background:${DCOLORS[n]};width:10px;height:10px;"></span>
+          <h3 style="font-size:16px;font-weight:800;color:var(--ink);">${n}</h3>
+        </div>
+        <div class="score tabular" style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:34px;color:${DCOLORS[n]};">${tot.toFixed(2)}</div>
+        <div class="task-count" style="color:var(--muted);font-size:13px;margin-top:4px;">${ts.length} tasks · Avg ${(scored.length?tot/scored.length:0).toFixed(2)}</div>
+        <div class="sparkline-wrap">${spark}</div>
+      </div>`;
     }).join('');
   }
-  function renderType(f,visible){
-    document.getElementById('typeCharts').innerHTML=visible.map(n=>{
-      const typedTasks=f.filter(t=>t.designer===n).map(t=>normalizeType(t.type)).filter(Boolean);
-      const counts={};
-      typedTasks.forEach(type=>{counts[type]=(counts[type]||0)+1;});
-      const total=typedTasks.length;
 
-      if(!total)return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">0 typed tasks</span></div><div class="empty-mini">No valid Column B type data.</div></div>`;
-
-      const segs=TYPE_ORDER.map(type=>{
-        const count=counts[type]||0;
-        if(!count)return '';
-        const pct=count/total*100;
-        return `<div class="seg" style="width:${pct}%;background:${TYPE_COLORS[type]}" data-type="${esc(type)}" data-color="${TYPE_COLORS[type]}" data-count="${count}" data-pct="${pct.toFixed(1)}">${pct>=8?Math.round(pct)+'%':''}</div>`;
-      }).join('');
-
-      const legend=TYPE_ORDER.map(type=>`<div class="legend-item"><span class="swatch" style="background:${TYPE_COLORS[type]}"></span>${type} (${counts[type]||0})</div>`).join('');
-      return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">${total} typed tasks</span></div><div class="stack">${segs}</div><div class="legend">${legend}</div></div>`;
-    }).join('');
-
-    document.querySelectorAll('#typeCharts .seg').forEach(s=>{
-      s.addEventListener('mousemove',e=>showTip(`<div class="tip-head"><span class="tip-sw" style="background:${s.dataset.color}"></span>${s.dataset.type}</div><div>${s.dataset.count} creatives · ${s.dataset.pct}%</div>`,e));
-      s.addEventListener('mouseleave',hideTip);
+  // 8-week trailing score-per-week sparkline, using end date (fallback start date).
+  function buildSparkline(ts,color){
+    const dateOf=t=>t.endDateValue||t.startDateValue;
+    const dated=ts.filter(t=>dateOf(t)).map(t=>({d:new Date(dateOf(t)+'T00:00:00'),v:Number(t.oScore||0)}));
+    if(!dated.length)return `<div class="empty-mini">No dated tasks yet.</div>`;
+    dated.sort((a,b)=>a.d-b.d);
+    const last=dated[dated.length-1].d;
+    const start=new Date(last);start.setDate(start.getDate()-7*7);
+    const buckets=Array(8).fill(0);
+    dated.forEach(({d,v})=>{
+      const weeksAgo=Math.floor((last-d)/(7*86400000));
+      const idx=7-weeksAgo;
+      if(idx>=0&&idx<8)buckets[idx]+=v;
     });
+    const max=Math.max(...buckets,0.01);
+    const W=180,H=32,step=W/(buckets.length-1);
+    const pts=buckets.map((v,i)=>`${(i*step).toFixed(1)},${(H-(v/max)*H*0.85-2).toFixed(1)}`).join(' ');
+    const lastX=((buckets.length-1)*step).toFixed(1);
+    const lastY=(H-(buckets[buckets.length-1]/max)*H*0.85-2).toFixed(1);
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" xmlns="http://www.w3.org/2000/svg">
+      <polyline points="${pts}" fill="none" style="stroke:${color}" stroke-width="1.75" stroke-linejoin="round"/>
+      <circle cx="${lastX}" cy="${lastY}" r="2.5" style="fill:${color}"/>
+    </svg>`;
   }
+
+  // ---------- A1: SCORE × TIER THRESHOLD BAR ----------
+  function renderTierChart(f,visible){
+    const rows=visible.map(n=>{
+      const score=f.filter(t=>t.designer===n).reduce((a,t)=>a+t.oScore,0);
+      return {name:n,score,tier:getTierInfo(score)};
+    }).sort((a,b)=>b.score-a.score);
+
+    const W=1000,H=60+rows.length*54,mL=90,mR=90,mT=16,mB=8;
+    const pL=mL,pR=W-mR,pT=mT,pH=H-mT-mB;
+    const axisMax=Math.max(30,...rows.map(r=>r.score+3));
+    const x=v=>pL+(v/axisMax)*(pR-pL);
+    const zones=[{s:0,e:9,label:'BELOW 0–9',color:'--status-a2'},{s:9,e:18,label:'MEETING 9–18',color:'--status-a4'},{s:18,e:28,label:'EXCEEDING 18–28',color:'--status-a6'},{s:28,e:axisMax,label:'28+',color:'--status-a8'}];
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+    zones.forEach((z,i)=>{
+      svg+=`<rect x="${x(z.s).toFixed(1)}" y="${pT}" width="${(x(z.e)-x(z.s)).toFixed(1)}" height="${pH}" fill="var(${z.color})" opacity="${i%2===0?0.10:0.18}"/>`;
+      svg+=`<text x="${((x(z.s)+x(Math.min(z.e,axisMax)))/2).toFixed(1)}" y="${pT-4}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--chart-axis)">${z.label}</text>`;
+    });
+    [9,18,28].forEach(v=>{
+      svg+=`<line x1="${x(v).toFixed(1)}" y1="${pT}" x2="${x(v).toFixed(1)}" y2="${pT+pH}" stroke="var(--chart-line)" stroke-width="1.5"/>`;
+    });
+
+    rows.forEach((r,i)=>{
+      const cy=pT+i*54+27;
+      const barH=22;
+      const bw=Math.max(2,x(r.score)-pL);
+      const near=r.tier.gap>0&&r.tier.gap<3;
+      const justPassed=r.score-r.tier.min<1&&r.tier.min>0;
+      svg+=`<text x="${pL-10}" y="${cy+4}" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink)">${esc(r.name)}</text>`;
+      svg+=`<rect class="bar-r tier-row" data-n="${esc(r.name)}" data-s="${r.score.toFixed(2)}" data-tier="${esc(r.tier.name)}" data-gap="${r.tier.gap.toFixed(2)}"
+              x="${pL}" y="${(cy-barH/2).toFixed(1)}" width="${bw.toFixed(1)}" height="${barH}" rx="4" style="fill:${DCOLORS[r.name]}"/>`;
+      svg+=`<text x="${(pL+bw+8).toFixed(1)}" y="${cy+4}" font-size="12" font-weight="800" font-family="JetBrains Mono,monospace" fill="var(--ink)">${r.score.toFixed(2)}</text>`;
+      if(near){
+        svg+=`<text x="${(pL+bw+8).toFixed(1)}" y="${cy+18}" font-size="10" fill="var(--terra)">差 ${r.tier.gap.toFixed(2)} 到 ${esc(r.tier.nextName)}</text>`;
+      }else if(justPassed){
+        svg+=`<text x="${(pL+bw+8).toFixed(1)}" y="${cy+18}" font-size="10" fill="var(--gold)">僅超過 ${(r.score-r.tier.min).toFixed(2)}</text>`;
+      }
+    });
+    svg+='</svg>';
+    document.getElementById('tierChart').innerHTML=svg;
+
+    document.querySelectorAll('#tierChart .tier-row').forEach(bar=>{
+      bar.addEventListener('mousemove',e=>{
+        showTip(`<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[bar.dataset.n]}"></span>${bar.dataset.n}</div>
+          <div>Score: ${bar.dataset.s}</div><div>Tier: ${bar.dataset.tier}</div><div>Gap to next: ${bar.dataset.gap}</div>`,e);
+      });
+      bar.addEventListener('mouseleave',hideTip);
+    });
+
+    const table=document.getElementById('tierTable');
+    table.innerHTML=`<tr><th>Designer</th><th>Score</th><th>Tier</th><th>Gap to next tier</th></tr>`+
+      rows.map(r=>`<tr><td>${esc(r.name)}</td><td class="num">${r.score.toFixed(2)}</td><td>${esc(r.tier.name)}</td><td class="num">${r.tier.gap.toFixed(2)}</td></tr>`).join('');
+  }
+
+  // ---------- A2: OUTPUT COUNT vs SCORE SCATTER ----------
+  function renderScatterChart(f,visible){
+    const points=visible.map(n=>{
+      const ts=f.filter(t=>t.designer===n);
+      const score=ts.reduce((a,t)=>a+t.oScore,0);
+      return {name:n,count:ts.length,score,avg:ts.length?score/ts.length:0};
+    });
+
+    const W=1000,H=440,mL=54,mR=24,mT=20,mB=44;
+    const pL=mL,pR=W-mR,pT=mT,pB=H-mB,pW=pR-pL,pH=pB-pT;
+    const maxCount=Math.max(5,...points.map(p=>p.count))*1.15;
+    const maxScore=Math.max(10,...points.map(p=>p.score))*1.15;
+    const x=v=>pL+(v/maxCount)*pW;
+    const y=v=>pB-(v/maxScore)*pH;
+
+    let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
+    const yStep=niceScale(maxScore).step;
+    for(let v=0;v<=maxScore;v+=yStep){
+      svg+=`<line x1="${pL}" y1="${y(v).toFixed(1)}" x2="${pR}" y2="${y(v).toFixed(1)}" stroke="var(--chart-grid)"/>
+            <text x="${pL-8}" y="${(y(v)+4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--chart-axis)">${v}</text>`;
+    }
+    const xStep=niceScale(maxCount).step;
+    for(let v=0;v<=maxCount;v+=xStep){
+      svg+=`<line x1="${x(v).toFixed(1)}" y1="${pT}" x2="${x(v).toFixed(1)}" y2="${pB}" stroke="var(--chart-grid)"/>
+            <text x="${x(v).toFixed(1)}" y="${pB+18}" text-anchor="middle" font-size="11" fill="var(--chart-axis)">${v}</text>`;
+    }
+    svg+=`<text x="${(pL+pW/2).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--chart-axis)">Task count</text>`;
+
+    // Per-task-average isolines y = k·x
+    [0.5,0.6,0.7].forEach(k=>{
+      const x2=Math.min(maxCount,maxScore/k);
+      svg+=`<line x1="${x(0).toFixed(1)}" y1="${y(0).toFixed(1)}" x2="${x(x2).toFixed(1)}" y2="${y(x2*k).toFixed(1)}" stroke="var(--chart-line)" stroke-width="1"/>
+            <text x="${(x(x2)-4).toFixed(1)}" y="${(y(x2*k)-4).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--chart-axis)" paint-order="stroke" stroke="var(--chart-bg)" stroke-width="3">每件 ${k}</text>`;
+    });
+
+    points.forEach(p=>{
+      const cx=x(p.count),cy=y(p.score);
+      svg+=`<circle class="bar-r" data-n="${esc(p.name)}" data-c="${p.count}" data-s="${p.score.toFixed(2)}" data-a="${p.avg.toFixed(2)}"
+              cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="9" style="fill:${DCOLORS[p.name]}" stroke="var(--chart-bg)" stroke-width="2"/>`;
+      svg+=`<text x="${(cx+13).toFixed(1)}" y="${(cy+4).toFixed(1)}" font-size="12" font-weight="800" fill="var(--ink)" paint-order="stroke" stroke="var(--chart-bg)" stroke-width="4">${esc(p.name)} · ${p.avg.toFixed(2)}/task</text>`;
+    });
+    svg+='</svg>';
+    document.getElementById('scatterChart').innerHTML=svg;
+
+    document.querySelectorAll('#scatterChart circle').forEach(dot=>{
+      dot.addEventListener('mousemove',e=>{
+        showTip(`<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[dot.dataset.n]}"></span>${dot.dataset.n}</div>
+          <div>${dot.dataset.c} tasks · ${dot.dataset.s} pts total</div><div>${dot.dataset.a} pts/task average</div>`,e);
+      });
+      dot.addEventListener('mouseleave',hideTip);
+    });
+
+    const table=document.getElementById('scatterTable');
+    table.innerHTML=`<tr><th>Designer</th><th>Tasks</th><th>Total score</th><th>Avg / task</th></tr>`+
+      points.map(p=>`<tr><td>${esc(p.name)}</td><td class="num">${p.count}</td><td class="num">${p.score.toFixed(2)}</td><td class="num">${p.avg.toFixed(2)}</td></tr>`).join('');
+  }
+
+  // ---------- A3: A2 STAGNATION PANEL ----------
+  function renderStagnationPanel(f,visible){
+    const rows=visible.map(n=>{
+      const ts=f.filter(t=>t.designer===n);
+      const a2=ts.filter(t=>t.statusCode==='A2');
+      const recoverable=a2.reduce((sum,t)=>sum+Number(t.mScore||0)*(1.0-0.4),0);
+      return {name:n,a2Count:a2.length,total:ts.length,pct:ts.length?a2.length/ts.length*100:0,recoverable,a2Tasks:a2};
+    }).sort((a,b)=>b.pct-a.pct);
+
+    const teamA2=rows.reduce((s,r)=>s+r.a2Count,0);
+    const teamTotal=rows.reduce((s,r)=>s+r.total,0);
+    const teamRecoverable=rows.reduce((s,r)=>s+r.recoverable,0);
+    document.getElementById('stagnationSummary').innerHTML=`
+      <div><div class="num tabular">${teamA2}</div><div class="lbl">Team A2 tasks</div></div>
+      <div><div class="num tabular">${teamTotal?(teamA2/teamTotal*100).toFixed(0):0}%</div><div class="lbl">of all tasks</div></div>
+      <div><div class="num tabular">+${teamRecoverable.toFixed(2)}</div><div class="lbl">Recoverable score (est.)</div></div>
+    `;
+    document.getElementById('stagnationNote').innerHTML='Recoverable score is an estimate: type score × (A4 status score − A2 status score), assuming every A2 task simply moves to the minimum Approved status. It is not a guarantee — some A2 tasks (tooling, spec docs, internal references) have no client-approval path at all.';
+
+    const maxCount=Math.max(1,...rows.map(r=>r.total));
+    document.getElementById('stagnationChart').innerHTML=rows.map((r,i)=>{
+      const trackPct=r.total/maxCount*100;
+      const fillPct=r.total?r.a2Count/r.total*100:0;
+      return `<div class="hbar-row" style="grid-template-columns:minmax(90px,120px) 1fr 120px;cursor:pointer;" onclick="toggleStagnationDetail(${i})">
+        <div class="hbar-label">${esc(r.name)}</div>
+        <div class="hbar-track" style="width:${trackPct}%;background:var(--inset);">
+          <div class="hbar-fill" style="width:${fillPct}%;background:${DCOLORS[r.name]};"></div>
+        </div>
+        <div class="hbar-count">${r.a2Count} / ${r.total} · ${r.pct.toFixed(0)}%</div>
+      </div>
+      <div class="stagnation-detail" id="stagDetail${i}">
+        ${r.a2Tasks.length?`<div class="stagnation-detail-row head"><span>Task</span><span>Type</span><span>Delivered</span><span>AM</span></div>`+
+          r.a2Tasks.map(t=>`<div class="stagnation-detail-row"><span>${esc(t.task)}</span><span>${esc(displayType(t.type))}</span><span class="tabular">${esc(shortDate(t.endDateValue||t.startDateValue))}</span><span>${esc(t.am||'—')}</span></div>`).join('')
+          :'<div class="empty-mini">No A2 tasks for this designer in the current filter.</div>'}
+      </div>`;
+    }).join('');
+  }
+  function toggleStagnationDetail(i){document.getElementById(`stagDetail${i}`).classList.toggle('open');}
+
+  // ---------- TYPE DISTRIBUTION: small multiples, shared count axis ----------
+  function renderType(f,visible){
+    const byDesignerType={};
+    let maxCount=1;
+    visible.forEach(n=>{
+      const ts=f.filter(t=>t.designer===n);
+      const counts={};
+      ts.forEach(t=>{const key=displayType(normalizeType(t.type)||t.type);counts[key]=(counts[key]||0)+1;});
+      byDesignerType[n]={counts,total:ts.length};
+      Object.values(counts).forEach(c=>{maxCount=Math.max(maxCount,c);});
+    });
+
+    const allTypes=[...TYPE_ORDER,'Unclassified'];
+
+    document.getElementById('typeCharts').innerHTML=visible.map(n=>{
+      const {counts,total}=byDesignerType[n];
+      if(!total)return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">0 tasks</span></div><div class="empty-mini">No tasks.</div></div>`;
+      const rows=allTypes.filter(t=>counts[t]).map(t=>{
+        const count=counts[t];
+        const pct=count/maxCount*100;
+        const color=t==='Unclassified'?'var(--faint)':typeColor(t);
+        return `<div class="hbar-row">
+          <div class="hbar-label"${t==='Unclassified'?' style="color:var(--red);font-style:italic;"':''}>${esc(t)}</div>
+          <div class="hbar-track"><div class="hbar-fill" style="width:${pct}%;background:${color};"></div></div>
+          <div class="hbar-count">${count}</div>
+        </div>`;
+      }).join('');
+      return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">${total} tasks</span></div>${rows}</div>`;
+    }).join('');
+  }
+
+  // ---------- STATUS DISTRIBUTION: shared x-axis max, sequential status color ----------
   function renderStatus(f,visible){
-    document.getElementById('statusCharts').innerHTML=visible.map(n=>{
+    const byDesignerCode={};
+    let sharedMax=1;
+    visible.forEach(n=>{
       const ts=f.filter(t=>t.designer===n);
       const byCode={};
-      ts.forEach(t=>{
-        if(!byCode[t.statusCode])byCode[t.statusCode]=[];
-        byCode[t.statusCode].push(t);
-      });
+      ts.forEach(t=>{(byCode[t.statusCode]=byCode[t.statusCode]||[]).push(t);});
+      byDesignerCode[n]={byCode,total:ts.length};
+      Object.values(byCode).forEach(arr=>{sharedMax=Math.max(sharedMax,arr.length);});
+    });
 
+    document.getElementById('statusCharts').innerHTML=visible.map(n=>{
+      const {byCode,total}=byDesignerCode[n];
       const codes=STATUS_ORDER.filter(c=>byCode[c]);
-      if(!codes.length){
-        return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">0 total</span></div><div class="empty-mini">No tasks.</div></div>`;
-      }
+      if(!codes.length)return `<div class="chart-block"><div class="chart-name"><span>${n}</span><span class="chart-total">0 total</span></div><div class="empty-mini">No tasks.</div></div>`;
 
-      const max=Math.max(...codes.map(c=>byCode[c].length),1);
-      const total=ts.length;
       const rate=getApproveRate(f,n);
-
       const rows=codes.map(code=>{
-        const approved=WINS.includes(code);
-        const w=Math.round(byCode[code].length/max*100);
-        const encoded=encodeURIComponent(JSON.stringify(byCode[code].map(t=>({
-          task:t.task,
-          score:Number(t.oScore||0)
-        }))));
-
-        return `<div class="srow ${approved?'win':''}" data-code="${code}" data-name="${n}" data-items="${encoded}">
+        const w=Math.round(byCode[code].length/sharedMax*100);
+        const encoded=encodeURIComponent(JSON.stringify(byCode[code].map(t=>({task:t.task,score:Number(t.oScore||0)}))));
+        return `<div class="srow" data-code="${code}" data-name="${n}" data-items="${encoded}" onclick="this.nextElementSibling.classList.toggle('open')">
           <div class="slabel">${code} <span class="full">${STATUS_FULL[code]||esc(code)}</span></div>
-          <div class="sbar"><div class="sfill ${approved?'win':''}" style="width:${w}%"></div></div>
+          <div class="sbar"><div class="sfill" style="width:${w}%;background:${statusColor(code)};"></div></div>
           <div class="scount">${byCode[code].length}</div>
-        </div>`;
+        </div>
+        <div class="srow-detail">${byCode[code].map(t=>`<div class="srow-detail-task"><span>${esc(t.task)}</span><b class="tabular">${Number(t.oScore||0).toFixed(2)}</b></div>`).join('')}</div>`;
       }).join('');
 
       return `<div class="chart-block">
         <div class="chart-name">
           <span>${n}</span>
           <div class="chart-head-right">
-            <span class="approved-badge" title="A4–A8 tasks divided by A2–A8 tasks">
-              A Approve Rate <b>${rate.approved}/${rate.denominator} · ${rate.percent.toFixed(0)}%</b>
-            </span>
-            <span class="chart-total">${total} total</span>
+            <span class="approved-badge" title="A4–A8 tasks divided by A2–A8 tasks">A Approve Rate <b>${rate.approved}/${rate.denominator} · ${rate.percent.toFixed(0)}%</b></span>
+            <span class="chart-total">${total} total (scale shared across all 3)</span>
           </div>
         </div>
         ${rows}
@@ -709,43 +943,34 @@
       r.addEventListener('mousemove',e=>{
         const items=JSON.parse(decodeURIComponent(r.dataset.items));
         const score=items.reduce((sum,item)=>sum+Number(item.score||0),0);
-        const taskHtml=items.map(item=>`<div class="tip-task">• ${esc(item.task)} <span style="color:#c9bfa8">(${Number(item.score||0).toFixed(2)} pts)</span></div>`).join('');
-
-        showTip(
-          `<div class="tip-head">${r.dataset.name} · ${r.dataset.code}</div>
+        showTip(`<div class="tip-head">${r.dataset.name} · ${r.dataset.code}</div>
            <div class="tip-sub">${STATUS_FULL[r.dataset.code]||esc(r.dataset.code)}</div>
-           <div>${items.length} tasks · ${score.toFixed(2)} total pts</div>
-           ${taskHtml}`,
-          e
-        );
+           <div>${items.length} tasks · ${score.toFixed(2)} total pts — click row for full list</div>`,e);
       });
       r.addEventListener('mouseleave',hideTip);
     });
   }
 
   function renderOverview(f,visible){
-    // Potential overview
     document.getElementById('potentialOverview').innerHTML=visible.map(name=>{
       const p=getPotentialInfo(f,name);
       let actionText='Already at the highest Performance Tier.';
-
       if(p.tier.gap>0&&p.neededTasks===null){
-        actionText=`<span class="warning">${p.candidates.length} A2–A3 tasks are not enough to close the full tier gap.</span>`;
+        actionText=`<span style="color:var(--terra);font-weight:800;">${p.candidates.length} A2–A3 tasks are not enough to close the full tier gap.</span>`;
       }else if(p.tier.gap>0){
         actionText=`Upgrade about <b>${p.neededTasks}</b> A2–A3 task${p.neededTasks===1?'':'s'} to A4.`;
       }
-
-      return `<div class="potential-card">
-        <div class="potential-name">${name}</div>
-        <div class="potential-main">
-          Current score: <b>${p.score.toFixed(2)}</b><br>
+      return `<div class="chart-block">
+        <div class="chart-name"><span>${name}</span></div>
+        <div style="font-size:12px;line-height:1.7;color:var(--ink2);">
+          Current score: <b class="tabular">${p.score.toFixed(2)}</b><br>
           Current tier: ${p.tier.name}<br>
           Next tier: <b>${p.tier.nextName}</b><br>
-          Score gap: <b>${p.tier.gap.toFixed(2)}</b> pts<br>
+          Score gap: <b class="tabular">${p.tier.gap.toFixed(2)}</b> pts<br>
           ${actionText}
         </div>
-        <div class="potential-sub">
-          A2–A3 potential pool: ${p.candidates.length} tasks · up to +${p.totalPotential.toFixed(2)} pts if all move to A4.
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          A2–A3 pool: ${p.candidates.length} tasks · up to +${p.totalPotential.toFixed(2)} pts if all move to A4.
         </div>
       </div>`;
     }).join('');
@@ -753,15 +978,10 @@
     // ---------- BY STATUS: score earned per status code (not cumulative) ----------
     const perStatus={};
     let maxScore=0;
-
     visible.forEach(name=>{
       perStatus[name]={};
-
       OV_CODES.forEach(code=>{
-        const value=f
-          .filter(t=>t.designer===name&&t.statusCode===code)
-          .reduce((sum,t)=>sum+Number(t.oScore||0),0);
-
+        const value=f.filter(t=>t.designer===name&&t.statusCode===code).reduce((sum,t)=>sum+Number(t.oScore||0),0);
         perStatus[name][code]=value;
         maxScore=Math.max(maxScore,value);
       });
@@ -777,40 +997,31 @@
     const y=v=>pB-(v/sc.max)*pH;
 
     let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
-
-    [{s:2,e:6,fill:'rgba(47,158,95,.09)'},{s:9,e:10,fill:'rgba(221,106,58,.09)'}]
-      .forEach(zone=>{
-        svg+=`<rect x="${pL+gW*zone.s}" y="${pT}" width="${gW*(zone.e-zone.s+1)}" height="${pH}" fill="${zone.fill}"/>`;
-      });
-
+    [{s:2,e:6,c:'--status-a6'},{s:9,e:10,c:'--status-c2'}].forEach(zone=>{
+      svg+=`<rect x="${pL+gW*zone.s}" y="${pT}" width="${gW*(zone.e-zone.s+1)}" height="${pH}" fill="var(${zone.c})" opacity="0.12"/>`;
+    });
     for(let v=0;v<=sc.max;v+=sc.step){
       const yy=y(v);
-      svg+=`<line x1="${pL}" y1="${yy}" x2="${pR}" y2="${yy}" stroke="#e7dfce"/>
-            <text x="${pL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#a89e8c">${v}</text>`;
+      svg+=`<line x1="${pL}" y1="${yy}" x2="${pR}" y2="${yy}" stroke="var(--chart-grid)"/>
+            <text x="${pL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="var(--chart-axis)">${v}</text>`;
     }
-
     OV_CODES.forEach((code,i)=>{
       const cx=pL+gW*(i+.5);
       const win=WINS.includes(code);
       const brand=code[0]==='C';
-
       visible.forEach((name,j)=>{
         const value=perStatus[name][code]||0;
         const offset=(j-(nb-1)/2)*(barW+gap);
         const bx=cx+offset-barW/2;
         const bh=(value/sc.max)*pH;
-
         if(value>0){
-          svg+=`<rect class="bar-r" x="${bx.toFixed(1)}" y="${y(value).toFixed(1)}"
-                    width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" rx="3"
-                    fill="${DCOLORS[name]}" data-n="${name}" data-c="${code}" data-v="${value.toFixed(2)}"/>`;
+          svg+=`<rect class="bar-r" x="${bx.toFixed(1)}" y="${y(value).toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" rx="3"
+                    style="fill:${DCOLORS[name]}" data-n="${name}" data-c="${code}" data-v="${value.toFixed(2)}"/>`;
         }
       });
-
       svg+=`<text x="${cx}" y="${pB+20}" text-anchor="middle" font-size="12" font-weight="800"
-                  fill="${win?'#2f9e5f':(brand?'#dd6a3a':'#4a443b')}">${code}</text>`;
+                  fill="${win?'var(--green)':(brand?'var(--terra)':'var(--ink2)')}">${code}</text>`;
     });
-
     svg+=`</svg>`;
     document.getElementById('overviewChart').innerHTML=svg;
 
@@ -819,111 +1030,76 @@
       return `<div class="legend-item"><span class="swatch" style="background:${DCOLORS[name]}"></span>${name}
         <b style="font-family:'JetBrains Mono',monospace;margin-left:2px">${total.toFixed(2)}</b></div>`;
     }).join('')
-      +`<div class="legend-item"><span class="swatch" style="background:rgba(47,158,95,.25)"></span>A4–A8 Approved</div>
-        <div class="legend-item"><span class="swatch" style="background:rgba(221,106,58,.25)"></span>C1–C2 Branding</div>`;
+      +`<div class="legend-item"><span class="swatch" style="background:var(--status-a6);opacity:.5"></span>A4–A8 Approved</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--status-c2);opacity:.5"></span>C1–C2 Branding</div>`;
 
     document.querySelectorAll('#overviewChart .bar-r').forEach(bar=>{
       bar.addEventListener('mousemove',e=>{
-        showTip(
-          `<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[bar.dataset.n]}"></span>${bar.dataset.n} · ${bar.dataset.c}</div>
+        showTip(`<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[bar.dataset.n]}"></span>${bar.dataset.n} · ${bar.dataset.c}</div>
            <div class="tip-sub">${STATUS_FULL[bar.dataset.c]||esc(bar.dataset.c)}</div>
-           <div>Score from ${bar.dataset.c}: ${Number(bar.dataset.v).toFixed(2)}</div>`,
-          e
-        );
+           <div>Score from ${bar.dataset.c}: ${Number(bar.dataset.v).toFixed(2)}</div>`,e);
       });
       bar.addEventListener('mouseleave',hideTip);
     });
 
     // ---------- OVER TIME: cumulative score ----------
-    // Falls back to start date when end date is blank, so a scored task
-    // with no end date filled in yet still counts toward the total instead
-    // of silently vanishing from this chart. Once an end date is filled
-    // in, it takes over automatically since it's checked first.
     const timelineDate=t=>t.endDateValue||t.startDateValue;
     const validDates=f.map(timelineDate).filter(Boolean).sort();
     let weeks=[];
-
     if(validDates.length){
       const first=new Date(validDates[0]+'T00:00:00');
       const last=new Date(validDates[validDates.length-1]+'T00:00:00');
-      const start=new Date(first);
-      start.setDate(start.getDate()-((start.getDay()+6)%7));
-      const finish=new Date(last);
-      finish.setDate(finish.getDate()+(6-((finish.getDay()+6)%7)));
-
-      for(let d=new Date(start);d<=finish;d.setDate(d.getDate()+7)){
-        weeks.push(new Date(d));
-      }
+      const start=new Date(first);start.setDate(start.getDate()-((start.getDay()+6)%7));
+      const finish=new Date(last);finish.setDate(finish.getDate()+(6-((finish.getDay()+6)%7)));
+      for(let d=new Date(start);d<=finish;d.setDate(d.getDate()+7))weeks.push(new Date(d));
     }
-
     if(weeks.length<2){
       const d=weeks[0]||new Date();
       weeks=[new Date(d),new Date(d.getFullYear(),d.getMonth(),d.getDate()+7)];
     }
-
     const weekLabels=weeks.map(d=>(d.getMonth()+1)+'/'+d.getDate());
     const weekIndex=dateString=>{
       const date=new Date(dateString+'T00:00:00');
       let index=0;
-      for(let i=0;i<weeks.length;i++){
-        if(weeks[i]<=date)index=i;
-      }
+      for(let i=0;i<weeks.length;i++){if(weeks[i]<=date)index=i;}
       return index;
     };
-
     const series={};
-
     visible.forEach(name=>{
       const weeklyScore=Array(weeks.length).fill(0);
-
-      f.filter(t=>t.designer===name&&timelineDate(t)).forEach(t=>{
-        weeklyScore[weekIndex(timelineDate(t))]+=Number(t.oScore||0);
-      });
-
+      f.filter(t=>t.designer===name&&timelineDate(t)).forEach(t=>{weeklyScore[weekIndex(timelineDate(t))]+=Number(t.oScore||0);});
       let running=0;
-      series[name]=weeklyScore.map(value=>{
-        running+=value;
-        return running;
-      });
+      series[name]=weeklyScore.map(value=>{running+=value;return running;});
     });
-
     const maxCumulative=Math.max(1,...visible.map(name=>series[name][series[name].length-1]||0));
     const timeScale=niceScale(maxCumulative);
     const yTime=value=>pB-(value/timeScale.max)*pH;
     const xTime=index=>pL+(pW*(index/(weeks.length-1)));
 
     let timeline=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">`;
-
     for(let value=0;value<=timeScale.max;value+=timeScale.step){
       const yy=yTime(value);
-      timeline+=`<line x1="${pL}" y1="${yy}" x2="${pR}" y2="${yy}" stroke="#e7dfce"/>
-                 <text x="${pL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#a89e8c">${value}</text>`;
+      timeline+=`<line x1="${pL}" y1="${yy}" x2="${pR}" y2="${yy}" stroke="var(--chart-grid)"/>
+                 <text x="${pL-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="var(--chart-axis)">${value}</text>`;
     }
-
     weekLabels.forEach((label,index)=>{
       const every=Math.max(1,Math.ceil(weekLabels.length/7));
       if(index%every===0||index===weekLabels.length-1){
-        timeline+=`<text x="${xTime(index)}" y="${pB+20}" text-anchor="middle" font-size="11" fill="#6f685c">${label}</text>`;
+        timeline+=`<text x="${xTime(index)}" y="${pB+20}" text-anchor="middle" font-size="11" fill="var(--chart-axis)">${label}</text>`;
       }
     });
-
     visible.forEach(name=>{
       const points=series[name].map((value,index)=>`${xTime(index).toFixed(1)},${yTime(value).toFixed(1)}`).join(' ');
-      timeline+=`<polyline points="${points}" fill="none" stroke="${DCOLORS[name]}" stroke-width="2.5" stroke-linejoin="round"/>`;
-
+      timeline+=`<polyline points="${points}" fill="none" style="stroke:${DCOLORS[name]}" stroke-width="2.5" stroke-linejoin="round"/>`;
       series[name].forEach((value,index)=>{
         const isLast=index===series[name].length-1;
-        timeline+=`<circle class="tl-dot" cx="${xTime(index).toFixed(1)}" cy="${yTime(value).toFixed(1)}"
-                           r="${isLast?'5':'3.5'}" fill="${DCOLORS[name]}"
+        timeline+=`<circle class="tl-dot" cx="${xTime(index).toFixed(1)}" cy="${yTime(value).toFixed(1)}" r="${isLast?'5':'3.5'}" style="fill:${DCOLORS[name]}"
                            data-n="${name}" data-w="${weekLabels[index]}" data-v="${value.toFixed(2)}"/>`;
-
         if(isLast){
-          timeline+=`<text class="final-score-label" x="${(xTime(index)+9).toFixed(1)}" y="${(yTime(value)+4).toFixed(1)}"
-                          fill="${DCOLORS[name]}">${value.toFixed(2)}</text>`;
+          timeline+=`<text x="${(xTime(index)+9).toFixed(1)}" y="${(yTime(value)+4).toFixed(1)}" font-family="JetBrains Mono,monospace" font-size="12" font-weight="800" style="fill:${DCOLORS[name]}" paint-order="stroke" stroke="var(--chart-bg)" stroke-width="4">${value.toFixed(2)}</text>`;
         }
       });
     });
-
     timeline+=`</svg>`;
     document.getElementById('timelineChart').innerHTML=timeline;
 
@@ -935,21 +1111,10 @@
 
     document.querySelectorAll('#timelineChart .tl-dot').forEach(dot=>{
       dot.addEventListener('mousemove',e=>{
-        dot.setAttribute('r','5');
-        showTip(
-          `<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[dot.dataset.n]};border-radius:999px"></span>${dot.dataset.n}</div>
-           <div class="tip-sub">Week of ${dot.dataset.w}</div>
-           <div>Cumulative score: ${Number(dot.dataset.v).toFixed(2)}</div>`,
-          e
-        );
+        showTip(`<div class="tip-head"><span class="tip-sw" style="background:${DCOLORS[dot.dataset.n]};border-radius:999px"></span>${dot.dataset.n}</div>
+           <div class="tip-sub">Week of ${dot.dataset.w}</div><div>Cumulative score: ${Number(dot.dataset.v).toFixed(2)}</div>`,e);
       });
-
-      dot.addEventListener('mouseleave',()=>{
-        if(!dot.nextElementSibling||!dot.nextElementSibling.classList.contains('final-score-label')){
-          dot.setAttribute('r','3.5');
-        }
-        hideTip();
-      });
+      dot.addEventListener('mouseleave',hideTip);
     });
   }
 
@@ -961,25 +1126,25 @@
       const tot=ts.reduce((a,t)=>a+t.oScore,0);const w=Math.min(tot/50*100,100);const open=i===0;
       const byCode={};ts.forEach(t=>byCode[t.statusCode]=(byCode[t.statusCode]||0)+1);
       const inline=STATUS_ORDER.filter(c=>byCode[c]).map(c=>`${c}: ${byCode[c]}`).join(' · ');
-      // Most recent first; undated tasks (no end or start date) sort last.
       const sorted=[...ts].sort((a,b)=>(b.endDateValue||b.startDateValue||'').localeCompare(a.endDateValue||a.startDateValue||''));
       const rows=sorted.map(t=>{
         const full=t.status||`${t.statusCode} ${STATUS_FULL[t.statusCode]||''}`.trim();
         const win=WINS.includes(t.statusCode);
+        const typeLabel=t.type?esc(t.type):'<span class="unclassified">Unclassified</span>';
         return `<div class="task-row">
           <div class="task-date">${esc(shortDate(t.endDateValue||t.startDateValue))}</div>
           <div class="task-name">${esc(t.task)}</div>
-          <span class="pill-formula${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)} (${t.nScore.toFixed(2)}) × ${esc(t.type||'No Type')} (×${t.mScore.toFixed(2)}) = <b>${t.oScore.toFixed(2)}</b></span>
+          <span class="pill-formula${win?' win':''}" title="${esc(full)}">${esc(t.statusCode)} (${t.nScore.toFixed(2)}) × ${typeLabel} (×${t.mScore.toFixed(2)}) = <b>${t.oScore.toFixed(2)}</b></span>
         </div>`;
       }).join('');
       return `<div class="designer-section">
         <div class="designer-header" onclick="const l=this.parentNode.querySelector('.task-list');const a=this.querySelector('.arw');const o=l.style.display!=='none';l.style.display=o?'none':'block';a.innerText=o?'▼':'▲';">
-          <div class="avatar">${n[0]}</div>
+          <div class="avatar" style="background:${DCOLORS[n]}">${n[0]}</div>
           <div class="designer-info"><div class="designer-name">${n}</div><div class="designer-meta">${ts.length} tasks · ${inline}</div></div>
-          <div class="designer-total"><div class="num">${tot.toFixed(2)}</div><div class="text">Total Score</div></div>
+          <div class="designer-total"><div class="num tabular" style="color:${DCOLORS[n]}">${tot.toFixed(2)}</div><div class="text">Total Score</div></div>
           <div class="arw" style="color:var(--muted)">${open?'▲':'▼'}</div>
         </div>
-        <div class="bar"><div class="bar-fill" style="width:${w}%"></div></div>
+        <div class="bar"><div class="bar-fill" style="width:${w}%;background:${DCOLORS[n]};"></div></div>
         <div class="task-list" style="display:${open?'block':'none'}">${rows}</div>
       </div>`;
     }).join('');

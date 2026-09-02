@@ -116,10 +116,11 @@ function getDashboardData() {
 
     values.forEach(row => {
       // Sheet columns:
-      // A Task, B Type, D Status, E Start Date, F End Date, I Quarter,
+      // A Task, B Type, C AM, D Status, E Start Date, F End Date, I Quarter,
       // M Multiplier, N Status Score, O Total Score.
       const task = String(row[0] || '').trim();
       const type = String(row[1] || '').trim();
+      const am = String(row[2] || '').trim();
       const status = String(row[3] || '').trim();
       const startDateValue = normalizeDate(row[4]);
       const rawEndDate = row[5];
@@ -146,6 +147,7 @@ function getDashboardData() {
       tasks.push({
         designer,
         task,
+        am,
         type,
         normalizedType: normalizeType(type),
         status,
