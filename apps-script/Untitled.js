@@ -43,6 +43,22 @@ function isQuarterOnOrAfter(quarterText, boundary) {
  * RPC-bridge overhead) and falls back to google.script.run automatically
  * if that fetch fails for any reason (e.g. the sandboxed iframe this page
  * runs in isn't actually same-origin with this URL).
+ *
+ * The dashboard's JS is loaded from a data: URI (<?!= scriptDataUri ?> in
+ * index.html) instead of living in an inline <script> tag, and instead of
+ * a separate <script src> request. Two dead ends led here:
+ *  - An inline <script> tag: HtmlService's IFRAME sandbox reliably
+ *    corrupts a single character right around the midpoint of a large
+ *    inline <script> block's content (some internal two-part relay that
+ *    doesn't respect token boundaries) — "Unexpected identifier" at
+ *    whatever token happens to straddle that midpoint, at any script size
+ *    once the content is non-trivial.
+ *  - <script src="...?mode=script"> served via ContentService: the
+ *    request 302s through script.googleusercontent.com and the browser
+ *    ends up seeing Content-Type: application/binary instead of a JS
+ *    type, so it refuses to execute the response as a script.
+ * A data: URI sidesteps both — no separate request, and no inline
+ * <script> text content for the sandbox to relocate.
  */
 function doGet(e) {
   if (e && e.parameter && e.parameter.mode === 'data') {
@@ -60,7 +76,17 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  return HtmlService.createHtmlOutputFromFile('index')
+  // script.html holds the dashboard JS base64-encoded, not as plain text —
+  // HtmlService.createHtmlOutputFromFile() validates file content as HTML
+  // and throws "Malformed HTML content" on plain JS full of stray < and >
+  // (comparisons, string literals containing tag-like text). Base64 has
+  // none of those characters, so it round-trips through that API safely,
+  // and conveniently is already in the exact form a data: URI needs.
+  const scriptB64 = HtmlService.createHtmlOutputFromFile('script').getContent();
+
+  const template = HtmlService.createTemplateFromFile('index');
+  template.scriptDataUri = 'data:application/javascript;base64,' + scriptB64;
+  return template.evaluate()
     .setTitle('Performance Framework')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
