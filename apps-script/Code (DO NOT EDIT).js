@@ -6,19 +6,22 @@ const SOURCES = [
   {
     id:          "1nfSmY4GeRLuy3YmOXhjiJ1cnfNkXa9Q_LDXyj5mUd-E",
     sheet:       "List",
-    targetSheet: "Kathy",
+    targetSheet: "Kathy1",
   },
   // --- 第 2 個表格 ---
+  // Lin / Min 在 Designer Calculator 的原始分頁被分頁保護設成唯讀（對跑這
+  // 支同步的帳號而言）：Min 會直接丟 "protected cell" 錯誤，Lin 更糟 —— 寫入
+  // 被靜默丟掉，log 卻還是顯示更新成功。所以改同步到未受保護的 Lin1 / Min1。
   {
     id:          "1S6WO4uedwmJ2aGpGPVK906ab6x0YO0GoxSbGmGV9uyU",
     sheet:       "List",
-    targetSheet: "Lin",
+    targetSheet: "Lin1",
   },
   // --- 第 3 個表格 ---
   {
     id:          "1ZqI-v3RNYPX8s648VAfQxDoDvKaRqWJcvQf1YSDCeRI",
     sheet:       "List",
-    targetSheet: "Min",
+    targetSheet: "Min1",
   },
   // 「統計」→「…'s Summary」這 3 筆同步已移除：三人的樞紐分析表已整合進
   // Designer Calculator 自己的「Q3 Designer status」分頁，不再需要從各自
@@ -29,6 +32,16 @@ const SOURCES = [
 // ⏱️ 同步間隔設定（分鐘）
 // ========================================
 const SYNC_INTERVAL_MINUTES = 5;
+
+// ========================================
+// 🕒 同步時間橫幅
+// ========================================
+// 目標分頁第 1 列固定放「最後同步：…」，來源資料（含標題列）從第 2 列開始寫。
+// 之前同步默默停掉好幾天沒人發現，有了這一行，打開分頁就知道還活著。
+// 注意：Q3 / Q2 Designer status 的樞紐分析表來源範圍也必須從第 2 列起算，
+// 那邊由 Pivots.gs 的 fixPivots() 一起處理。
+const SYNC_BANNER_ROW = 1;
+const SYNC_DATA_START_ROW = 2;
 
 // ========================================
 // 以下不需要修改
@@ -61,7 +74,7 @@ function importWithFormat() {
       const sourceRange = sourceSheet.getRange(1, 1, lastRow, lastCol);
       const sourceValues = sourceRange.getDisplayValues();
       const sourceBackgrounds = sourceRange.getBackgrounds();
-      const targetRange = targetSheet.getRange(1, 1, lastRow, lastCol);
+      const targetRange = targetSheet.getRange(SYNC_DATA_START_ROW, 1, lastRow, lastCol);
       const targetValues = targetRange.getDisplayValues();
       const targetBackgrounds = targetRange.getBackgrounds();
 
@@ -72,6 +85,7 @@ function importWithFormat() {
       const backgroundsMatch = JSON.stringify(sourceBackgrounds) === JSON.stringify(targetBackgrounds);
 
       if (valuesMatch && backgroundsMatch) {
+        writeSyncBanner(targetSheet, lastCol, false);
         Logger.log(`✅ ${source.sheet} 無變動，跳過`);
         return;
       }
@@ -85,6 +99,8 @@ function importWithFormat() {
       targetRange.setVerticalAlignments(sourceRange.getVerticalAlignments());
       targetRange.setWrapStrategies(sourceRange.getWrapStrategies());
 
+      writeSyncBanner(targetSheet, lastCol, true);
+
       Logger.log(`✅ ${source.sheet} 更新完成！${lastRow} 行 x ${lastCol} 欄`);
 
     } catch (e) {
@@ -94,6 +110,22 @@ function importWithFormat() {
   });
 
   if (errors.length) notifySyncFailure(errors);
+}
+
+/**
+ * 在目標分頁第 1 列寫上同步時間。changed 為 true 表示這次真的有寫入新資料，
+ * false 表示比對後無變動 —— 兩種都會更新時間，這樣分頁上的時間就等於
+ * 「同步最後一次成功跑完的時間」，而不是「資料最後一次變動的時間」。
+ */
+function writeSyncBanner(targetSheet, lastCol, changed) {
+  const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm');
+  const banner = targetSheet.getRange(SYNC_BANNER_ROW, 1);
+  banner.setValue('最後同步：' + stamp + (changed ? '（資料已更新）' : '（無變動）'));
+  banner.setBackground('#fff8e1').setFontColor('#7a5c00').setFontWeight('bold').setFontSize(10);
+  if (lastCol > 1) {
+    targetSheet.getRange(SYNC_BANNER_ROW, 2, 1, lastCol - 1).clearContent().setBackground('#fff8e1');
+  }
+  if (targetSheet.getFrozenRows() < SYNC_BANNER_ROW) targetSheet.setFrozenRows(SYNC_BANNER_ROW);
 }
 
 /**

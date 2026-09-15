@@ -1,19 +1,24 @@
 const DESIGNERS = ['Kathy', 'Lin', 'Min'];
 
-// The dashboard reads each designer's tasks straight from her own
-// spreadsheet — not from the synced copy in Designer Calculator. Reading
-// has never needed write access, so this is immune to a designer's tab in
-// Designer Calculator being blocked by a protected range there (as
-// happened with Min's). Code (DO NOT EDIT).js keeps syncing List data into
-// Designer Calculator on its own schedule, independent of this — that
-// copy now exists for the "Q3 Designer status" pivot table and manual
-// review, not for the dashboard itself.
+// Dashboard 讀 Designer Calculator 裡同步好的 Kathy1 / Lin1 / Min1 三個分頁，
+// 而不是三位設計師自己的表。好處是畫面上的數字跟 Q3 / Q2 Designer status 的
+// 樞紐分析表一定是同一份資料，權限也只需要這一個檔案。
+//
+// 代價是多了一層依賴：Code (DO NOT EDIT).gs 的同步一旦停掉（2026-09 就整整
+// 停過一週沒人發現），dashboard 會跟著停在舊資料上而不會報錯。判斷資料新不新
+// 的依據是這三個分頁第 1 列的「最後同步：…」橫幅。
+const DESIGNER_CALCULATOR_ID = '1E144XQoWjzOpUMnDgZidejV4LOiUGZBT5hoPlp3nzko';
 const DESIGNER_SOURCES = {
-  Kathy: { spreadsheetId: '1nfSmY4GeRLuy3YmOXhjiJ1cnfNkXa9Q_LDXyj5mUd-E', sheetName: 'List' },
-  Lin: { spreadsheetId: '1S6WO4uedwmJ2aGpGPVK906ab6x0YO0GoxSbGmGV9uyU', sheetName: 'List' },
-  Min: { spreadsheetId: '1ZqI-v3RNYPX8s648VAfQxDoDvKaRqWJcvQf1YSDCeRI', sheetName: 'List' }
+  Kathy: { spreadsheetId: DESIGNER_CALCULATOR_ID, sheetName: 'Kathy1' },
+  Lin: { spreadsheetId: DESIGNER_CALCULATOR_ID, sheetName: 'Lin1' },
+  Min: { spreadsheetId: DESIGNER_CALCULATOR_ID, sheetName: 'Min1' }
 };
 
+// 那三個分頁第 1 列被同步程式拿去放「最後同步」橫幅，標題列在第 2 列，
+// 資料從第 3 列開始。刻意寫死數字而不是引用 Code.gs 的 SYNC_DATA_START_ROW，
+// 因為跨檔案的常數在載入順序上不保證先被定義。
+const DASHBOARD_HEADER_ROW = 2;
+const DASHBOARD_FIRST_DATA_ROW = 3;
 // Dashboard data is refreshed at most once every 120 seconds.
 const CACHE_TTL_SECONDS = 120;
 const CACHE_KEY_PREFIX = 'designer_dashboard_v2';
@@ -135,28 +140,62 @@ function getDashboardData() {
     if (!sheet) return;
 
     const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return;
+    const lastCol = sheet.getLastColumn();
+    if (lastRow < DASHBOARD_FIRST_DATA_ROW || lastCol < 1) return;
 
-    // A:O = 15 columns. Row 1 is the header, so start at row 2.
-    const values = sheet.getRange(2, 1, lastRow - 1, 15).getValues();
+    // Columns are located by header text, not by fixed position. On
+    // 2026-09-07 the source sheets had an empty "第 1 欄" deleted and
+    // "第 2 欄" renamed to "總分", shifting every column from K rightward one
+    // to the left. This code was reading O for the total score, so it started
+    // reading the 國家 text ("RU", "US") instead — parseNumber() turned that
+    // into 0 and the whole dashboard silently showed a score of 0.00 while
+    // still counting the right number of tasks. Matching on the header means
+    // a column being inserted, deleted or reordered can no longer do that.
+    const header = sheet.getRange(DASHBOARD_HEADER_ROW, 1, 1, lastCol).getValues()[0];
+    const col = {
+      task:        findColumn(header, ['任務'], 0),
+      type:        findColumn(header, ['類型'], 1),
+      am:          findColumn(header, ['AM'], 2),
+      status:      findColumn(header, ['狀態'], 3),
+      startDate:   findColumn(header, ['開始日期'], 4),
+      endDate:     findColumn(header, ['結束日期'], 5),
+      quarter:     findColumn(header, ['季度'], 8),
+      typeScore:   findColumn(header, ['類型分數'], 11),
+      statusScore: findColumn(header, ['狀態分數'], 12),
+      totalScore:  findColumn(header, ['總分', '第2欄'], 13),
+      // The free-text video spec column is labeled "size" (not "數量") in
+      // the live sheets, and there's a separate "count" column next to it
+      // that the sheet itself already resolves to a number per row. Prefer
+      // that computed number; only fall back to parsing the size text when
+      // count is blank.
+      videoSpec:  findColumn(header, ['size', '數量'], -1),
+      videoCount: findColumn(header, ['count'], -1)
+    };
+
+    const values = sheet.getRange(
+      DASHBOARD_FIRST_DATA_ROW, 1,
+      lastRow - DASHBOARD_FIRST_DATA_ROW + 1, lastCol
+    ).getValues();
 
     values.forEach(row => {
-      // Sheet columns:
-      // A Task, B Type, C AM, D Status, E Start Date, F End Date, I Quarter,
-      // M Multiplier, N Status Score, O Total Score.
-      const task = String(row[0] || '').trim();
-      const type = String(row[1] || '').trim();
-      const am = String(row[2] || '').trim();
-      const status = String(row[3] || '').trim();
-      const startDateValue = normalizeDate(row[4]);
-      const rawEndDate = row[5];
+      const task = String(row[col.task] || '').trim();
+      const type = String(row[col.type] || '').trim();
+      const am = String(row[col.am] || '').trim();
+      const status = String(row[col.status] || '').trim();
+      const startDateValue = normalizeDate(row[col.startDate]);
+      const rawEndDate = row[col.endDate];
       const endDateValue = normalizeDate(rawEndDate);
       const endDate = formatEndDate(rawEndDate, endDateValue);
-      const quarter = String(row[8] || '').trim();
+      const quarter = String(row[col.quarter] || '').trim();
+      const videoSpec = String(row[col.videoSpec] || '').trim();
+      const rawVideoCount = col.videoCount === -1 ? '' : row[col.videoCount];
+      const videoCount = (rawVideoCount !== '' && rawVideoCount !== null && rawVideoCount !== undefined)
+        ? parseNumber(rawVideoCount)
+        : parseVideoCount(row[col.videoSpec]);
 
-      const mScore = parseNumber(row[12]);
-      let nScore = parseNumber(row[13]);
-      let oScore = parseNumber(row[14]);
+      const mScore = parseNumber(row[col.typeScore]);
+      let nScore = parseNumber(row[col.statusScore]);
+      let oScore = parseNumber(row[col.totalScore]);
       const statusCode = extractStatusCode(status);
 
       // Per Irene: B2 "Added to AA Pipeline" no longer earns points from
@@ -184,7 +223,9 @@ function getDashboardData() {
         quarter,
         mScore,
         nScore,
-        oScore
+        oScore,
+        videoSpec,
+        videoCount
       });
     });
   });
@@ -313,7 +354,17 @@ function normalizeType(value) {
   const text = String(value || '').trim();
   if (!text) return '';
 
-  const key = text.toLowerCase().replace(/\s+/g, ' ');
+  // 先把寫法差異抹平再查表 —— 大小寫、斜線兩側的空白、連字號。這樣
+  // 「Interactive/Multi Video」「Interactive / Multi-video」會落在同一個 key，
+  // 不必每出現一種寫法就補一條。（2026-09 有 9 筆 Interactive/Multi Video
+  // 因為只差結尾那個 " Video" 就被判成無法辨識的類型。）
+  const key = text
+    .toLowerCase()
+    .replace(/[-\u2013\u2014]/g, ' ')
+    .replace(/\s*\/\s*/g, '/')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   const mapping = {
     'branding': 'Branding',
     'video': 'Video',
@@ -321,9 +372,8 @@ function normalizeType(value) {
     'ai story': 'AI stories',
     'playable': 'Playable',
     'interactive/multi': 'Interactive/Multi',
-    'interactive / multi': 'Interactive/Multi',
+    'interactive/multi video': 'Interactive/Multi',
     'static/banner': 'Static/Banner',
-    'static / banner': 'Static/Banner',
     'other': 'other'
   };
 
@@ -340,6 +390,112 @@ function extractStatusCode(status) {
   if (text.toLowerCase() === 'fail') return 'F';
 
   return text;
+}
+
+/**
+ * Index of the first column whose header exactly matches one of `names`, or
+ * `fallback` when none of them is present. Whitespace is stripped before
+ * comparing, so "第 2 欄" and "第2欄" count as the same header. The match is
+ * exact rather than a substring test, so looking for 類型 never lands on
+ * 類型分數.
+ */
+function findColumn(header, names, fallback) {
+  const wanted = names.map(name => name.replace(/\s+/g, ''));
+
+  for (let i = 0; i < header.length; i++) {
+    const text = String(header[i] || '').replace(/\s+/g, '');
+    if (text && wanted.indexOf(text) !== -1) return i;
+  }
+
+  return fallback;
+}
+
+/**
+ * How many finished videos a 任務 row represents, read from the 數量 column.
+ *
+ * The column is free text rather than a number, and two notations are in use:
+ *
+ *   "1. 16:9 15s 2. 16:9 6s 3. 9:16 15s 4. 9:16 6s"  -> 4  (numbered list)
+ *   "1. 9:16 14s 2. 16:9 15s x2"                     -> 3  (item 2 delivered twice)
+ *   "9:16, 16:9 6s & 15s"                            -> 4  (every ratio x every length)
+ *   "4"                                              -> 4  (already counted by hand)
+ *   ""                                               -> 0  (nothing claimed)
+ *
+ * The numbered-list form wins when it is present because it is explicit. The
+ * cross-product form is only a fallback for rows written the way the request
+ * was originally phrased, so those rows still count instead of silently
+ * reading as a single video.
+ */
+function parseVideoCount(value) {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value === 'number') return isNaN(value) ? 0 : value;
+
+  const text = String(value).trim();
+  if (!text) return 0;
+
+  // A cell someone already totalled by hand.
+  if (/^\d+(\.\d+)?$/.test(text)) return Number(text);
+
+  // Numbered list. The punctuation has to be followed by whitespace or the end
+  // of the cell, so a decimal like "1.5" is not mistaken for item 1.
+  const markers = /(?:^|[\s;,、])(\d+)\s*[.．、)](?=\s|$)/g;
+  const starts = [];
+  let match;
+  while ((match = markers.exec(text)) !== null) {
+    starts.push(markers.lastIndex);
+  }
+
+  if (starts.length) {
+    let total = 0;
+    for (let i = 0; i < starts.length; i++) {
+      const item = text.slice(starts[i], i + 1 < starts.length ? starts[i + 1] : text.length);
+      total += itemMultiplier(item);
+    }
+    return total;
+  }
+
+  // Cross product: "9:16, 16:9" x "6s & 15s". Ratios and lengths are counted as
+  // sets so "6s, 6s" does not inflate the total.
+  const ratios = uniqueMatches(text, /\b\d{1,2}\s*:\s*\d{1,2}\b/g);
+  const lengths = uniqueMatches(text, /\b\d{1,3}\s*s\b/gi);
+
+  if (ratios.length || lengths.length) {
+    return Math.max(ratios.length, 1) * Math.max(lengths.length, 1);
+  }
+
+  // Text that describes something, but nothing this code recognises. Treating
+  // it as one video is closer than treating it as none.
+  return itemMultiplier(text);
+}
+
+/**
+ * The "x2" on the end of a list item, or 1 when there is none.
+ *
+ * 尺寸跟份數在這一欄是同一種寫法 ——「320x480 x1」「1280 x 720 x1」——
+ * 所以先把尺寸剔掉再找份數，否則「320x480」會被讀成 ×480，一列橫幅素材
+ * 就能把一個人的影片總數灌高好幾百支。
+ */
+function itemMultiplier(text) {
+  const sizes = /\d{2,4}\s*[x×X]\s*\d{2,4}/g;
+  const match = /[x×X]\s*(\d+)/.exec(String(text).replace(sizes, ' '));
+  if (!match) return 1;
+  const count = Number(match[1]);
+  return count > 0 ? count : 1;
+}
+
+/** Distinct matches of `pattern`, compared with whitespace stripped. */
+function uniqueMatches(text, pattern) {
+  const seen = {};
+  const out = [];
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    const key = match[0].replace(/\s+/g, '').toLowerCase();
+    if (!seen[key]) {
+      seen[key] = true;
+      out.push(key);
+    }
+  }
+  return out;
 }
 
 function parseNumber(value) {
