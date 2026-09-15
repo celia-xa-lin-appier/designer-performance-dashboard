@@ -67,7 +67,7 @@ const COMBINED_ATTRIBUTES = [
  * booked for scoring, instead of wherever its start date happens to fall.
  *
  * Reads the three source spreadsheets directly (the same ones SOURCES in
- * Code (DO NOT EDIT).js lists) rather than concatenating the already-synced
+ * Code.js lists) rather than concatenating the already-synced
  * Kathy/Lin/Min tabs, so this tab is never a copy-of-a-copy running one
  * extra sync interval behind the source.
  */
@@ -75,7 +75,7 @@ function syncCombinedSheet() {
   const errors = [];
   const blocks = [];
 
-  // SOURCES lives in Code (DO NOT EDIT).js. Apps Script shares one global
+  // SOURCES lives in Code.js. Apps Script shares one global
   // scope across all files in the project, and this runs at call time (long
   // after every file has been evaluated), so the reference is safe.
   SOURCES.forEach(source => {
@@ -108,7 +108,7 @@ function syncCombinedSheet() {
     }
   });
 
-  // Reuses the throttled failure mail from Code (DO NOT EDIT).js so a broken
+  // Reuses the throttled failure mail from Code.js so a broken
   // merge is as visible as a broken per-designer sync.
   if (errors.length) notifySyncFailure(errors);
   if (!blocks.length) {

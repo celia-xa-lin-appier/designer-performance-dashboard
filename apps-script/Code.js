@@ -85,7 +85,7 @@ function importWithFormat() {
       const backgroundsMatch = JSON.stringify(sourceBackgrounds) === JSON.stringify(targetBackgrounds);
 
       if (valuesMatch && backgroundsMatch) {
-        writeSyncBanner(targetSheet, lastCol, false);
+        writeSyncBanner(targetSheet, lastCol, false, source);
         Logger.log(`✅ ${source.sheet} 無變動，跳過`);
         return;
       }
@@ -99,7 +99,7 @@ function importWithFormat() {
       targetRange.setVerticalAlignments(sourceRange.getVerticalAlignments());
       targetRange.setWrapStrategies(sourceRange.getWrapStrategies());
 
-      writeSyncBanner(targetSheet, lastCol, true);
+      writeSyncBanner(targetSheet, lastCol, true, source);
 
       Logger.log(`✅ ${source.sheet} 更新完成！${lastRow} 行 x ${lastCol} 欄`);
 
@@ -116,14 +116,28 @@ function importWithFormat() {
  * 在目標分頁第 1 列寫上同步時間。changed 為 true 表示這次真的有寫入新資料，
  * false 表示比對後無變動 —— 兩種都會更新時間，這樣分頁上的時間就等於
  * 「同步最後一次成功跑完的時間」，而不是「資料最後一次變動的時間」。
+ *
+ * B 欄緊接著放一個連到該設計師原始表單（SOURCES 裡的 source.id）的連結，
+ * 方便直接打開來源核對。因為下面會把 B 欄到最後一欄清空重寫，這個連結
+ * 每次同步都要重新寫一次，不能只設一次就不管——不然下一次同步就被清掉了。
  */
-function writeSyncBanner(targetSheet, lastCol, changed) {
+function writeSyncBanner(targetSheet, lastCol, changed, source) {
   const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm');
   const banner = targetSheet.getRange(SYNC_BANNER_ROW, 1);
   banner.setValue('最後同步：' + stamp + (changed ? '（資料已更新）' : '（無變動）'));
   banner.setBackground('#fff8e1').setFontColor('#7a5c00').setFontWeight('bold').setFontSize(10);
   if (lastCol > 1) {
     targetSheet.getRange(SYNC_BANNER_ROW, 2, 1, lastCol - 1).clearContent().setBackground('#fff8e1');
+  }
+  if (source && source.id) {
+    const designerName = source.targetSheet.replace(/1$/, '');
+    const url = 'https://docs.google.com/spreadsheets/d/' + source.id + '/edit';
+    const label = '開啟 ' + designerName + ' 的原始表單';
+    targetSheet.getRange(SYNC_BANNER_ROW, 2)
+      .setFormula('=HYPERLINK("' + url + '", "' + label + '")')
+      .setFontColor('#1a73e8')
+      .setFontWeight('normal')
+      .setFontSize(10);
   }
   if (targetSheet.getFrozenRows() < SYNC_BANNER_ROW) targetSheet.setFrozenRows(SYNC_BANNER_ROW);
 }

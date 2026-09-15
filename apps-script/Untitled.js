@@ -4,7 +4,7 @@ const DESIGNERS = ['Kathy', 'Lin', 'Min'];
 // 而不是三位設計師自己的表。好處是畫面上的數字跟 Q3 / Q2 Designer status 的
 // 樞紐分析表一定是同一份資料，權限也只需要這一個檔案。
 //
-// 代價是多了一層依賴：Code (DO NOT EDIT).gs 的同步一旦停掉（2026-09 就整整
+// 代價是多了一層依賴：Code.gs 的同步一旦停掉（2026-09 就整整
 // 停過一週沒人發現），dashboard 會跟著停在舊資料上而不會報錯。判斷資料新不新
 // 的依據是這三個分頁第 1 列的「最後同步：…」橫幅。
 const DESIGNER_CALCULATOR_ID = '1E144XQoWjzOpUMnDgZidejV4LOiUGZBT5hoPlp3nzko';
@@ -318,7 +318,7 @@ function refreshDashboardCache() {
  * Run once manually from the Apps Script editor to install the background
  * refresh trigger. Safe to re-run — only clears a prior
  * refreshDashboardCache trigger first, so it never stacks duplicates and
- * never touches importWithFormat's trigger in Code (DO NOT EDIT).js.
+ * never touches importWithFormat's trigger in Code.js.
  */
 function setupCacheTrigger() {
   ScriptApp.getProjectTriggers()
