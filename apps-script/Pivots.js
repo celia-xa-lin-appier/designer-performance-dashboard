@@ -125,8 +125,11 @@ function fixPivots() {
 /** 清掉既有的列/欄/值/篩選，再照 spec 用標題名稱重建。 */
 function applyPivotSpec(table, srcSheet, spec, quarter, label) {
   const header = srcSheet.getRange(SYNC_DATA_START_ROW, 1, 1, srcSheet.getLastColumn()).getDisplayValues()[0];
+  // 比對走 canonicalHeader()，這樣來源表把「狀態」加註記成「狀態 (A/B/C)」
+  // 之後，樞紐分析表還是綁得到同一欄。
+  const canonical = header.map(canonicalHeader);
   const columnOf = name => {
-    const index = header.indexOf(name);
+    const index = canonical.indexOf(canonicalHeader(name));
     if (index === -1) throw new Error(srcSheet.getName() + ' 找不到標題「' + name + '」');
     return index + 1;
   };

@@ -152,11 +152,13 @@ function getDashboardData() {
     // still counting the right number of tasks. Matching on the header means
     // a column being inserted, deleted or reordered can no longer do that.
     const header = sheet.getRange(DASHBOARD_HEADER_ROW, 1, 1, lastCol).getValues()[0];
+    // 狀態與類型沒有合理的預設欄號可以退——猜錯的代價是整季的圖表默默畫錯
+    // 資料，而不是少一欄，所以這兩欄找不到就直接丟錯讓畫面報出來。
     const col = {
       task:        findColumn(header, ['任務'], 0),
-      type:        findColumn(header, ['類型'], 1),
+      type:        requireColumn(header, ['類型'], source.sheetName),
       am:          findColumn(header, ['AM'], 2),
-      status:      findColumn(header, ['狀態'], 3),
+      status:      requireColumn(header, ['狀態'], source.sheetName),
       startDate:   findColumn(header, ['開始日期'], 4),
       endDate:     findColumn(header, ['結束日期'], 5),
       quarter:     findColumn(header, ['季度'], 8),
@@ -393,21 +395,54 @@ function extractStatusCode(status) {
 }
 
 /**
- * Index of the first column whose header exactly matches one of `names`, or
- * `fallback` when none of them is present. Whitespace is stripped before
- * comparing, so "第 2 欄" and "第2欄" count as the same header. The match is
- * exact rather than a substring test, so looking for 類型 never lands on
- * 類型分數.
+ * A header cell reduced to the part that identifies the column: whitespace
+ * stripped, and one trailing parenthetical annotation removed.
+ *
+ * 來源表的標題會被加註記 —— 2026-09-17 發現「狀態」被改成「狀態 (A/B/C)」、
+ * 「類型」被改成「類型 (D)」，findColumn() 當時是完全比對，兩欄都找不到就
+ * 退回寫死的欄號，於是 dashboard 把 AM 姓名當成類型、把結束日期當成狀態讀
+ * （星期五的日期字串開頭是 "Fri"，還剛好被判成狀態碼 F）。註記是給人看的，
+ * 不該讓程式讀錯欄，所以比對前先把它拿掉。
+ *
+ * 只脫掉結尾那一組括號，中間的括號保留，而且不是子字串比對，所以
+ * 「類型分數」仍然不會被當成「類型」。
+ */
+function canonicalHeader(value) {
+  return String(value || '')
+    .replace(/[（(][^）)]*[）)]\s*$/, '')
+    .replace(/\s+/g, '');
+}
+
+/**
+ * Index of the first column whose header matches one of `names`, or
+ * `fallback` when none of them is present. Both sides go through
+ * canonicalHeader(), so "第 2 欄" / "第2欄" and "狀態" / "狀態 (A/B/C)" each
+ * count as the same header. The match is exact rather than a substring test,
+ * so looking for 類型 never lands on 類型分數.
  */
 function findColumn(header, names, fallback) {
-  const wanted = names.map(name => name.replace(/\s+/g, ''));
+  const wanted = names.map(canonicalHeader);
 
   for (let i = 0; i < header.length; i++) {
-    const text = String(header[i] || '').replace(/\s+/g, '');
+    const text = canonicalHeader(header[i]);
     if (text && wanted.indexOf(text) !== -1) return i;
   }
 
   return fallback;
+}
+
+/**
+ * Like findColumn(), but for the columns the dashboard cannot be correct
+ * without. A missing 狀態 or 類型 used to fall back to a hardcoded column
+ * number and quietly render a whole quarter of wrong bars; failing here
+ * means the page shows an error naming the sheet and the header instead.
+ */
+function requireColumn(header, names, sheetName) {
+  const index = findColumn(header, names, -1);
+  if (index === -1) {
+    throw new Error(`${sheetName} 第 ${DASHBOARD_HEADER_ROW} 列找不到標題「${names[0]}」`);
+  }
+  return index;
 }
 
 /**
