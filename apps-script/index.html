@@ -192,7 +192,9 @@
   .pill-formula b{color:var(--terra);font-weight:800;}
   .pill-formula.win{color:var(--green);background:var(--inset);border-color:var(--border2);}
   .pill-formula.win b{color:var(--green);}
-  .pill-video{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--type-video);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;white-space:nowrap;}
+  /* 圖示與文字顏色由 renderDesignerList() 依該筆的類型 inline 指定，這裡的
+     color 只是類型認不出來時的底色。 */
+  .pill-video{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:800;color:var(--type-other);background:var(--card2);border:1px solid var(--border2);border-radius:6px;padding:4px 9px;white-space:nowrap;}
   .unclassified{color:var(--red);font-style:italic;}
   .empty{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;color:var(--muted);}
 
