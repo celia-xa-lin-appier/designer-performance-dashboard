@@ -123,6 +123,12 @@ function importWithFormat() {
  */
 function writeSyncBanner(targetSheet, lastCol, changed, source) {
   const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm');
+
+  // 三個分頁的 A1:C1 曾被合併成一格（大概是為了讓橫幅看起來寬一點）。合併之後
+  // B 欄是非錨點格，setFormula() 會丟例外而讓整位設計師的同步失敗，所以先拆開。
+  // 對沒有合併的分頁 breakApart() 不做事，可以每次都跑。
+  targetSheet.getRange(SYNC_BANNER_ROW, 1, 1, Math.max(lastCol, 2)).breakApart();
+
   const banner = targetSheet.getRange(SYNC_BANNER_ROW, 1);
   banner.setValue('最後同步：' + stamp + (changed ? '（資料已更新）' : '（無變動）'));
   banner.setBackground('#fff8e1').setFontColor('#7a5c00').setFontWeight('bold').setFontSize(10);
